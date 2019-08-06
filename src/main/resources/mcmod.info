@@ -1,0 +1,21 @@
+[
+{
+  "modid" : "dogslie",
+  "name" : "Let Sleeping Dogs Lie",
+  "version" : "${version}",
+  "url" : "http://ichun.me/",
+  "credits" : "",
+  "authors": [
+    "iChun"
+  ],
+  "description": "Lets dogs lie.",
+  "logoFile" : "",
+  "updateUrl" : "",
+  "parent" : "",
+  "screenshots": [
+  ],
+  "dependancies": [
+    "Forge"
+  ]
+}
+]
