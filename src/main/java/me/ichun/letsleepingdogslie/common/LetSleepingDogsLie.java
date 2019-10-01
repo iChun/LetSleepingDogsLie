@@ -5,6 +5,7 @@ import me.ichun.letsleepingdogslie.common.model.ModelWolf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderWolf;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraftforge.common.MinecraftForge;
@@ -16,6 +17,8 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Logger;
+
+import java.util.Map;
 
 @Mod(modid = LetSleepingDogsLie.MODID, name = LetSleepingDogsLie.NAME,
         version = LetSleepingDogsLie.VERSION,
@@ -29,7 +32,7 @@ public class LetSleepingDogsLie
     public static final String MODID = "dogslie";
     public static final String NAME = "LetSleepingDogsLie";
 
-    public static final String VERSION = "1.0.0";
+    public static final String VERSION = "1.0.1";
 
     @Mod.Instance(MODID)
     public static LetSleepingDogsLie instance;
@@ -47,6 +50,8 @@ public class LetSleepingDogsLie
     public static float rangeBeforeGettingUp = 3F;
 
     public static int getsUpTo = 1;
+
+    public static boolean attemptModWolfSupport = true;
 
     public static String[] enabledPoses = new String[]
             {
@@ -75,6 +80,7 @@ public class LetSleepingDogsLie
         rangeBeforeGettingUp = config.getFloat("rangeBeforeGettingUp", "general", rangeBeforeGettingUp, 0F, 32F, I18n.translateToLocal("lsdl.config.rangeBeforeGettingUp"));
         getsUpTo = config.getInt("getsUpToLie", "general", getsUpTo, 0, 3, I18n.translateToLocal("lsdl.config.getsUpTo"));
         enabledPoses = config.getStringList("enabledPoses", "general", enabledPoses, I18n.translateToLocal("lsdl.config.enabledPoses"), enabledPoses, enabledPoses);
+        attemptModWolfSupport = config.getBoolean("attemptModWolfSupport", "general", attemptModWolfSupport, I18n.translateToLocal("lsdl.config.attemptModWolfSupport"));
 
         if(config.hasChanged())
         {
@@ -87,7 +93,7 @@ public class LetSleepingDogsLie
     {
         if(Loader.isModLoaded("doggytalents"))
         {
-            logger.error("Detected Doggy Talents installed, we're incompatible with them, so we won't do anything!");
+            logger.error("Detected Doggy Talents installed, they have their own lying down mechanic, meaning we're incompatible with them, so we won't do anything!");
         }
         else
         {
@@ -98,6 +104,23 @@ public class LetSleepingDogsLie
     @SideOnly(Side.CLIENT)
     public void init()
     {
+        boolean replaced = false;
+
+        if(attemptModWolfSupport)
+        {
+            Map< Class <? extends Entity> , Render <? extends Entity >> entityRenderMap = Minecraft.getMinecraft().getRenderManager().entityRenderMap;
+            for(Map.Entry<Class <? extends Entity> , Render <? extends Entity >> e : entityRenderMap.entrySet())
+            {
+                if(e.getKey() != EntityWolf.class && e.getValue() instanceof RenderWolf && ((RenderWolf)e.getValue()).mainModel.getClass().equals(ModelWolf.class)) //we don't do the entity wolf here, just look for mod mobs
+                {
+                    ((RenderWolf)e.getValue()).mainModel= new ModelWolf();
+                    replaced = true;
+
+                    logger.info("ModWolfSupport: Overrode " + e.getValue().getClass().getSimpleName() + " model.");
+                }
+            }
+        }
+
         Render<EntityWolf> renderer = Minecraft.getMinecraft().getRenderManager().getEntityClassRenderObject(EntityWolf.class);
         if(renderer instanceof RenderWolf)
         {
@@ -105,9 +128,8 @@ public class LetSleepingDogsLie
             if(renderWolf.mainModel.getClass().equals(net.minecraft.client.model.ModelWolf.class)) //It's a vanilla wolf model
             {
                 renderWolf.mainModel = new ModelWolf();
+                replaced = true;
 
-                tickHandlerClient = new TickHandlerClient();
-                MinecraftForge.EVENT_BUS.register(tickHandlerClient);
                 logger.info("Overrode Vanilla Wolf model. We are ready!");
             }
             else
@@ -118,6 +140,12 @@ public class LetSleepingDogsLie
         else
         {
             logger.error("Wolf renderer isn't RenderWolf, so we won't do anything!");
+        }
+
+        if(replaced)
+        {
+            tickHandlerClient = new TickHandlerClient();
+            MinecraftForge.EVENT_BUS.register(tickHandlerClient);
         }
     }
 

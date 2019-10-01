@@ -14,12 +14,12 @@ compileJava {
     sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-version = "1.12.2-1.0.0"
+version = "1.12.2-1.0.1"
 group= "lsdl"
 archivesBaseName = "LetSleepingDogsLie"
 
 minecraft {
-    version = "1.12.2-14.23.5.2838"
+    version = "1.12.2-14.23.5.2847"
     runDir = "run"
     
     // the mappings can be changed at any time, and must be in the following format.
@@ -49,6 +49,12 @@ processResources
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
+}
+
+jar {
+	manifest {
+		attributes 'FMLAT' : 'dogslie_at.cfg'
+	}
 }
 
 // deobf jars
