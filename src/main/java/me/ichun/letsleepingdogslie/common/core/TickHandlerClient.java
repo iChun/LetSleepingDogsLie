@@ -200,13 +200,16 @@ public class TickHandlerClient
                     poses[0] = poses[0] + side;
                     poses[1] = poses[1] + side;
                 }
-                else if(poses[0].endsWith("Side") || poses[0].endsWith("Skewed"))
+                else
                 {
-                    poses[0] = poses[0] + (rand.nextBoolean() ? "L" : "R");
-                }
-                else if(poses[1].endsWith("Side"))
-                {
-                    poses[1] = poses[1] + (rand.nextBoolean() ? "L" : "R");
+                    if(poses[0].endsWith("Side") || poses[0].endsWith("Skewed"))
+                    {
+                        poses[0] = poses[0] + (rand.nextBoolean() ? "L" : "R");
+                    }
+                    if(poses[1].endsWith("Side"))
+                    {
+                        poses[1] = poses[1] + (rand.nextBoolean() ? "L" : "R");
+                    }
                 }
 
                 setPoses = poses;
