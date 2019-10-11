@@ -1,166 +1,170 @@
 package me.ichun.letsleepingdogslie.common;
 
-import me.ichun.letsleepingdogslie.common.core.TickHandlerClient;
-import me.ichun.letsleepingdogslie.common.model.ModelWolf;
+import me.ichun.letsleepingdogslie.client.core.EventHandler;
+import me.ichun.letsleepingdogslie.client.model.WolfModel;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.client.renderer.entity.RenderWolf;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.WolfRenderer;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.passive.EntityWolf;
-import net.minecraft.util.text.translation.I18n;
+import net.minecraft.entity.passive.WolfEntity;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLFingerprintViolationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import org.apache.logging.log4j.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-@Mod(modid = LetSleepingDogsLie.MODID, name = LetSleepingDogsLie.NAME,
-        version = LetSleepingDogsLie.VERSION,
-        certificateFingerprint = LetSleepingDogsLie.CERT_FINGERPRINT,
-        clientSideOnly = true,
-        acceptableRemoteVersions = "*",
-        dependencies = "required-after:forge@[13.19.0.2141,)",
-        acceptedMinecraftVersions = "[1.12,1.13)"
-)
+@Mod(LetSleepingDogsLie.MOD_ID)
 public class LetSleepingDogsLie
 {
-    public static final String MODID = "dogslie";
-    public static final String NAME = "LetSleepingDogsLie";
+    public static final String MOD_ID = "dogslie";
+    public static final String MOD_NAME = "Let Sleeping Dogs Lie";
 
-    public static final String VERSION = "1.0.1";
+    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Marker INIT = MarkerManager.getMarker("Init");
+    private static final Marker MOD_WOLF_SUPPORT = MarkerManager.getMarker("ModWolfSupport");
 
-    public static final String CERT_FINGERPRINT = "4db5c2bd1b556f252a5b8b54b256d381b2a0a6b8";
+    public static Config config;
+    public static EventHandler eventHandler;
 
-    @Mod.Instance(MODID)
-    public static LetSleepingDogsLie instance;
-
-    private static Logger logger;
-
-    public static TickHandlerClient tickHandlerClient;
-
-    //config
-
-    public static boolean dogsSpawnLying = true;
-
-    public static int timeBeforeLie = 15 * 20; //in ticks
-
-    public static float rangeBeforeGettingUp = 3F;
-
-    public static int getsUpTo = 1;
-
-    public static boolean attemptModWolfSupport = true;
-
-    public static String[] enabledPoses = new String[]
-            {
-                    "forelegStraight",
-                    "forelegSprawled",
-                    "forelegSprawledBack",
-                    "forelegSkewed",
-                    "forelegSide",
-                    "hindlegStraight",
-                    "hindlegStraightBack",
-                    "hindlegSprawled",
-                    "hindlegSprawledBack",
-                    "hindlegSide"
-            };
-
-    @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event)
+    public LetSleepingDogsLie()
     {
-        logger = event.getModLog();
-
-        Configuration config = new Configuration(event.getSuggestedConfigurationFile());
-        config.load();
-
-        dogsSpawnLying = config.getBoolean("dogsSpawnLying", "general", dogsSpawnLying, I18n.translateToLocal("lsdl.config.dogsSpawnLying"));
-        timeBeforeLie = config.getInt("timeBeforeLie", "general", timeBeforeLie, 1, 6000000, I18n.translateToLocal("lsdl.config.timeBeforeLie"));
-        rangeBeforeGettingUp = config.getFloat("rangeBeforeGettingUp", "general", rangeBeforeGettingUp, 0F, 32F, I18n.translateToLocal("lsdl.config.rangeBeforeGettingUp"));
-        getsUpTo = config.getInt("getsUpToLie", "general", getsUpTo, 0, 3, I18n.translateToLocal("lsdl.config.getsUpTo"));
-        enabledPoses = config.getStringList("enabledPoses", "general", enabledPoses, I18n.translateToLocal("lsdl.config.enabledPoses"), enabledPoses, enabledPoses);
-        attemptModWolfSupport = config.getBoolean("attemptModWolfSupport", "general", attemptModWolfSupport, I18n.translateToLocal("lsdl.config.attemptModWolfSupport"));
-
-        if(config.hasChanged())
-        {
-            config.save();
-        }
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
+            setupConfig();
+            FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
+        });
+        DistExecutor.runWhenOn(Dist.DEDICATED_SERVER, () -> () -> LOGGER.log(Level.ERROR, "You are loading " + MOD_NAME + " on a server. " + MOD_NAME + " is a client only mod!"));
     }
 
-    @Mod.EventHandler
-    public void postInit(FMLPostInitializationEvent event)
+    private void setupConfig()
     {
-        if(Loader.isModLoaded("doggytalents"))
-        {
-            logger.error("Detected Doggy Talents installed, they have their own lying down mechanic, meaning we're incompatible with them, so we won't do anything!");
-        }
-        else
-        {
-            init();
-        }
+        //build the config
+        ForgeConfigSpec.Builder configBuilder = new ForgeConfigSpec.Builder();
+
+        config = new Config(configBuilder);
+
+        //register the config. This loads the config for us
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, configBuilder.build(), MOD_ID + ".toml");
     }
 
-    @Mod.EventHandler
-    public void onFingerprintViolation(FMLFingerprintViolationEvent event)
+    @OnlyIn(Dist.CLIENT)
+    private void processIMC(final InterModProcessEvent event)
     {
-        if(event.getSource() != null && event.getSource().isFile())
+        if(ModList.get().isLoaded("doggytalents"))
         {
-            logger.warn("The file " + event.getSource().getName() + " has been modified. Support for the mod will not be provided.");
+            LOGGER.error(INIT, "Detected Doggy Talents installed, they have their own lying down mechanic, meaning we're incompatible with them, so we won't do anything!");
+            return;
         }
-    }
 
-    @SideOnly(Side.CLIENT)
-    public void init()
-    {
         boolean replaced = false;
 
-        if(attemptModWolfSupport)
+        if(config.attemptModWolfSupport.get())
         {
-            Map< Class <? extends Entity> , Render <? extends Entity >> entityRenderMap = Minecraft.getMinecraft().getRenderManager().entityRenderMap;
-            for(Map.Entry<Class <? extends Entity> , Render <? extends Entity >> e : entityRenderMap.entrySet())
+            Map<Class <? extends Entity>, EntityRenderer<? extends Entity >> renderers = Minecraft.getInstance().getRenderManager().renderers;
+            for(Map.Entry<Class <? extends Entity>, EntityRenderer<? extends Entity >> e : renderers.entrySet())
             {
-                if(e.getKey() != EntityWolf.class && e.getValue() instanceof RenderWolf && ((RenderWolf)e.getValue()).mainModel.getClass().equals(ModelWolf.class)) //we don't do the entity wolf here, just look for mod mobs
+                if(e.getKey() != WolfEntity.class && e.getValue() instanceof WolfRenderer && ((WolfRenderer)e.getValue()).entityModel.getClass().equals(net.minecraft.client.renderer.entity.model.WolfModel.class)) //we don't do the entity wolf here, just look for mod mobs
                 {
-                    ((RenderWolf)e.getValue()).mainModel= new ModelWolf();
+                    ((WolfRenderer)e.getValue()).entityModel = new WolfModel();
                     replaced = true;
 
-                    logger.info("ModWolfSupport: Overrode " + e.getValue().getClass().getSimpleName() + " model.");
+                    LOGGER.info(MOD_WOLF_SUPPORT, "Overrode " + e.getValue().getClass().getSimpleName() + " model.");
                 }
             }
         }
 
-        Render<EntityWolf> renderer = Minecraft.getMinecraft().getRenderManager().getEntityClassRenderObject(EntityWolf.class);
-        if(renderer instanceof RenderWolf)
+        EntityRenderer<WolfEntity> renderer = Minecraft.getInstance().getRenderManager().getRenderer(WolfEntity.class);
+        if(renderer instanceof WolfRenderer)
         {
-            RenderWolf renderWolf = (RenderWolf)renderer;
-            if(renderWolf.mainModel.getClass().equals(net.minecraft.client.model.ModelWolf.class)) //It's a vanilla wolf model
+            WolfRenderer renderWolf = (WolfRenderer)renderer;
+            if(renderWolf.entityModel.getClass().equals(net.minecraft.client.renderer.entity.model.WolfModel.class)) //It's a vanilla wolf model
             {
-                renderWolf.mainModel = new ModelWolf();
+                renderWolf.entityModel = new WolfModel();
                 replaced = true;
 
-                logger.info("Overrode Vanilla Wolf model. We are ready!");
+                LOGGER.info(INIT, "Overrode Vanilla Wolf model. We are ready!");
             }
             else
             {
-                logger.error("RenderWolf model is not ModelWolf, so we won't do anything!");
+                LOGGER.error(INIT, "RenderWolf model is not ModelWolf, so we won't do anything!");
             }
         }
         else
         {
-            logger.error("Wolf renderer isn't RenderWolf, so we won't do anything!");
+            LOGGER.error(INIT, "Wolf renderer isn't RenderWolf, so we won't do anything!");
         }
+
 
         if(replaced)
         {
-            tickHandlerClient = new TickHandlerClient();
-            MinecraftForge.EVENT_BUS.register(tickHandlerClient);
+            MinecraftForge.EVENT_BUS.register(eventHandler = new EventHandler());
         }
     }
 
+    public enum GetsUpFor
+    {
+        NOBODY,
+        OWNER,
+        PLAYERS,
+        ANY_LIVING_ENTITY
+    }
+
+    public class Config
+    {
+        public final ForgeConfigSpec.BooleanValue dogsSpawnLying;
+        public final ForgeConfigSpec.IntValue timeBeforeLie;
+        public final ForgeConfigSpec.DoubleValue rangeBeforeGettingUp;
+        public final ForgeConfigSpec.EnumValue<GetsUpFor> getsUpTo;
+        public final ForgeConfigSpec.BooleanValue attemptModWolfSupport;
+        public final ForgeConfigSpec.ConfigValue<List<? extends String>> enabledPoses;
+
+        public Config(ForgeConfigSpec.Builder builder)
+        {
+            builder.comment("General settings").push("general");
+
+            dogsSpawnLying = builder.comment("Do dogs spawn into the world lying down if they are already sitting.")
+                    .translation("config.dogslie.prop.dogsSpawnLying.desc")
+                    .define("dogsSpawnLying", true);
+            timeBeforeLie = builder.comment("Time to spend sitting (in ticks) before dogs lie down.")
+                    .translation("config.dogslie.prop.timeBeforeLie.desc")
+                    .defineInRange("timeBeforeLie", 15 * 20, 1, 6000000);
+            rangeBeforeGettingUp = builder.comment("Range for target to get to dog before dog gets up (in blocks)")
+                    .translation("config.dogslie.prop.rangeBeforeGettingUp.desc")
+                    .defineInRange("rangeBeforeGettingUp", 3D, 0D, 32D);
+            getsUpTo = builder.comment("Who the dog gets up to")
+                    .translation("config.dogslie.prop.getsUpTo.desc")
+                    .defineEnum("getsUpTo", GetsUpFor.OWNER);
+            attemptModWolfSupport = builder.comment("Allow the mod to attempt to add support for mod wolves? (Still doesn't allow support for Doggy Talents)")
+                    .translation("config.dogslie.prop.attemptModWolfSupport.desc")
+                    .define("attemptModWolfSupport", true);
+
+            final List<String> defaultPoses = new ArrayList<>();
+            defaultPoses.add("forelegStraight");
+            defaultPoses.add("forelegSprawled");
+            defaultPoses.add("forelegSprawledBack");
+            defaultPoses.add("forelegSkewed");
+            defaultPoses.add("forelegSide");
+            defaultPoses.add("hindlegStraight");
+            defaultPoses.add("hindlegStraightBack");
+            defaultPoses.add("hindlegSprawled");
+            defaultPoses.add("hindlegSprawledBack");
+            defaultPoses.add("hindlegSide");
+
+            enabledPoses = builder.comment("Poses for lying down that are enabled. If the mod can't find compatible poses, it will randomly pick one set.")
+                    .translation("config.dogslie.prop.enabledPoses.desc")
+                    .defineList("enabledPoses", defaultPoses, x -> x instanceof String && defaultPoses.contains(x));
+
+            builder.pop();
+        }
+    }
 }

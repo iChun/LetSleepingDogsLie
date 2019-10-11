@@ -1,0 +1,26 @@
+modLoader="javafml"
+loaderVersion="[28,)" #forge version dep
+issueTrackerURL="https://github.com/iChun/LetSleepingDogsLie/issues"
+
+[[mods]]
+    modId="dogslie"
+    version="${file.jarVersion}" #mandatory
+    displayName="Let Sleeping Dogs Lie"
+    displayURL="https://ichun.me/"
+    authors="iChun"
+    description='''
+    Lets dogs lie.
+    '''
+
+[[dependencies.betterthanbunnies]]
+    modId="forge"
+    mandatory=true
+    versionRange="[28,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.betterthanbunnies]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.14.4]"
+    ordering="NONE"
+    side="BOTH"

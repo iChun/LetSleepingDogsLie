@@ -1,40 +1,44 @@
-package me.ichun.letsleepingdogslie.common.core;
+package me.ichun.letsleepingdogslie.client.core;
 
 import me.ichun.letsleepingdogslie.common.LetSleepingDogsLie;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.passive.EntityWolf;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.passive.WolfEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.SoundEvents;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.WeakHashMap;
 
-public class TickHandlerClient
+@OnlyIn(Dist.CLIENT)
+public class EventHandler
 {
     public Random rand = new Random();
 
     public int worldLoadCooldown = 0;
 
-    public WeakHashMap<EntityWolf, WolfInfo> wolfInfo = new WeakHashMap<>();
+    public WeakHashMap<WolfEntity, WolfInfo> wolfInfo = new WeakHashMap<>();
 
     @SubscribeEvent
     public void onEntityJoinWorld(EntityJoinWorldEvent event)
     {
-        if(event.getWorld().isRemote && event.getEntity() instanceof EntityWolf)
+        if(event.getWorld().isRemote && event.getEntity() instanceof WolfEntity)
         {
-            EntityWolf wolf = (EntityWolf)event.getEntity();
+            WolfEntity wolf = (WolfEntity)event.getEntity();
             if(!wolfInfo.containsKey(wolf))
             {
-                wolfInfo.put(wolf, new WolfInfo(LetSleepingDogsLie.dogsSpawnLying && worldLoadCooldown > 0));
+                wolfInfo.put(wolf, new WolfInfo(LetSleepingDogsLie.config.dogsSpawnLying.get() && worldLoadCooldown > 0));
             }
         }
     }
@@ -46,7 +50,7 @@ public class TickHandlerClient
         {
             worldLoadCooldown--;
 
-            if(!Minecraft.getMinecraft().isGamePaused())
+            if(!Minecraft.getInstance().isGamePaused())
             {
                 wolfInfo.entrySet().removeIf(e -> !e.getValue().tick(e.getKey()));
             }
@@ -56,13 +60,13 @@ public class TickHandlerClient
     @SubscribeEvent
     public void onWorldLoad(WorldEvent.Load event)
     {
-        Minecraft.getMinecraft().addScheduledTask(this::clean);
+        Minecraft.getInstance().execute(this::clean);
     }
 
     @SubscribeEvent
-    public void onClientDisconnect(FMLNetworkEvent.ClientDisconnectionFromServerEvent event)
+    public void onLoggedOutEvent(ClientPlayerNetworkEvent.LoggedOutEvent event)
     {
-        Minecraft.getMinecraft().addScheduledTask(this::clean);
+        Minecraft.getInstance().execute(this::clean);
     }
 
     public void clean()
@@ -71,7 +75,8 @@ public class TickHandlerClient
         worldLoadCooldown = 20;
     }
 
-    public WolfInfo getWolfInfo(EntityWolf wolf)
+    @Nonnull
+    public WolfInfo getWolfInfo(WolfEntity wolf)
     {
         if(wolfInfo.containsKey(wolf))
         {
@@ -79,11 +84,12 @@ public class TickHandlerClient
         }
         else
         {
-            WolfInfo info = new WolfInfo(LetSleepingDogsLie.dogsSpawnLying && worldLoadCooldown > 0);
+            WolfInfo info = new WolfInfo(LetSleepingDogsLie.config.dogsSpawnLying.get() && worldLoadCooldown > 0);
             wolfInfo.put(wolf, info);
             return info;
         }
     }
+
 
     public class WolfInfo
     {
@@ -93,12 +99,12 @@ public class TickHandlerClient
 
         public WolfInfo(boolean lying)
         {
-            sitTime = lying ? LetSleepingDogsLie.timeBeforeLie : 0;
+            sitTime = lying ? LetSleepingDogsLie.config.timeBeforeLie.get() : 0;
         }
 
-        public boolean tick(EntityWolf parent)
+        public boolean tick(WolfEntity parent)
         {
-            if(parent.isDead)
+            if(parent.removed)
             {
                 return false;
             }
@@ -112,12 +118,13 @@ public class TickHandlerClient
                     parent.getEntityWorld().playSound(parent.posX, parent.posY + parent.getEyeHeight(), parent.posZ, SoundEvents.ENTITY_WOLF_WHINE, parent.getSoundCategory(), 0.4F, parent.isChild() ? (parent.getRNG().nextFloat() - parent.getRNG().nextFloat()) * 0.2F + 1.5F : (parent.getRNG().nextFloat() - parent.getRNG().nextFloat()) * 0.2F + 1.0F, false);
                 }
 
-                if(parent.ticksExisted % 10 == 0 && LetSleepingDogsLie.getsUpTo > 0 && LetSleepingDogsLie.rangeBeforeGettingUp > 0.1F)
+                LetSleepingDogsLie.GetsUpFor getsUpFor = LetSleepingDogsLie.config.getsUpTo.get();
+                if(parent.ticksExisted % 10 == 0 && getsUpFor != LetSleepingDogsLie.GetsUpFor.NOBODY && LetSleepingDogsLie.config.rangeBeforeGettingUp.get() > 0.1D)
                 {
-                    List<Entity> ents = parent.getEntityWorld().getEntitiesWithinAABBExcludingEntity(parent, parent.getEntityBoundingBox().grow(LetSleepingDogsLie.rangeBeforeGettingUp));
-                    if(ents.stream().anyMatch(entity -> (LetSleepingDogsLie.getsUpTo == 1 && entity instanceof EntityLivingBase && parent.isOwner((EntityLivingBase)entity) ||
-                            LetSleepingDogsLie.getsUpTo == 2 && entity instanceof EntityPlayer && !((EntityPlayer)entity).isSpectator() ||
-                            LetSleepingDogsLie.getsUpTo == 3 && entity instanceof EntityLivingBase && !(entity instanceof EntityPlayer && ((EntityPlayer)entity).isSpectator())) && parent.canEntityBeSeen(entity)))
+                    List<Entity> ents = parent.getEntityWorld().getEntitiesWithinAABBExcludingEntity(parent, parent.getBoundingBox().grow(LetSleepingDogsLie.config.rangeBeforeGettingUp.get()));
+                    if(ents.stream().anyMatch(entity -> (getsUpFor == LetSleepingDogsLie.GetsUpFor.OWNER && entity instanceof LivingEntity && parent.isOwner((LivingEntity)entity) ||
+                            getsUpFor == LetSleepingDogsLie.GetsUpFor.PLAYERS && entity instanceof PlayerEntity && !entity.isSpectator() ||
+                            getsUpFor == LetSleepingDogsLie.GetsUpFor.ANY_LIVING_ENTITY && entity instanceof LivingEntity && !(entity instanceof PlayerEntity && entity.isSpectator())) && parent.canEntityBeSeen(entity)))
                     {
                         if(isLying)
                         {
@@ -139,10 +146,10 @@ public class TickHandlerClient
 
         public boolean isLying()
         {
-            return sitTime > LetSleepingDogsLie.timeBeforeLie;
+            return sitTime > LetSleepingDogsLie.config.timeBeforeLie.get();
         }
 
-        public String[] getCompatiblePoses(EntityWolf parent)
+        public String[] getCompatiblePoses(WolfEntity parent)
         {
             if(setPoses == null)
             {
@@ -150,7 +157,7 @@ public class TickHandlerClient
 
                 ArrayList<String> front = new ArrayList<>();
                 ArrayList<String> rear = new ArrayList<>();
-                for(String s : LetSleepingDogsLie.enabledPoses)
+                for(String s : LetSleepingDogsLie.config.enabledPoses.get())
                 {
                     if(s.startsWith("foreleg") && (!parent.isChild() || (s.equalsIgnoreCase("forelegSprawledBack") || s.equalsIgnoreCase("forelegSide"))))
                     {
