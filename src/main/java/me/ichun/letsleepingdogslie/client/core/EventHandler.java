@@ -115,7 +115,7 @@ public class EventHandler
 
                 if(!isLying && isLying() && worldLoadCooldown < 0)
                 {
-                    parent.getEntityWorld().playSound(parent.posX, parent.posY + parent.getEyeHeight(), parent.posZ, SoundEvents.ENTITY_WOLF_WHINE, parent.getSoundCategory(), 0.4F, parent.isChild() ? (parent.getRNG().nextFloat() - parent.getRNG().nextFloat()) * 0.2F + 1.5F : (parent.getRNG().nextFloat() - parent.getRNG().nextFloat()) * 0.2F + 1.0F, false);
+                    parent.getEntityWorld().playSound(parent.getPosX(), parent.getPosY() + parent.getEyeHeight(), parent.getPosZ(), SoundEvents.ENTITY_WOLF_WHINE, parent.getSoundCategory(), 0.4F, parent.isChild() ? (parent.getRNG().nextFloat() - parent.getRNG().nextFloat()) * 0.2F + 1.5F : (parent.getRNG().nextFloat() - parent.getRNG().nextFloat()) * 0.2F + 1.0F, false);
                 }
 
                 LetSleepingDogsLie.GetsUpFor getsUpFor = LetSleepingDogsLie.config.getsUpTo.get();
@@ -128,7 +128,7 @@ public class EventHandler
                     {
                         if(isLying)
                         {
-                            parent.getEntityWorld().playSound(parent.posX, parent.posY + parent.getEyeHeight(), parent.posZ, SoundEvents.ENTITY_WOLF_AMBIENT, parent.getSoundCategory(), 0.4F, parent.isChild() ? (parent.getRNG().nextFloat() - parent.getRNG().nextFloat()) * 0.2F + 1.5F : (parent.getRNG().nextFloat() - parent.getRNG().nextFloat()) * 0.2F + 1.0F, false);
+                            parent.getEntityWorld().playSound(parent.getPosX(), parent.getPosY() + parent.getEyeHeight(), parent.getPosZ(), SoundEvents.ENTITY_WOLF_AMBIENT, parent.getSoundCategory(), 0.4F, parent.isChild() ? (parent.getRNG().nextFloat() - parent.getRNG().nextFloat()) * 0.2F + 1.5F : (parent.getRNG().nextFloat() - parent.getRNG().nextFloat()) * 0.2F + 1.0F, false);
                         }
                         sitTime = 0;
                         setPoses = null;

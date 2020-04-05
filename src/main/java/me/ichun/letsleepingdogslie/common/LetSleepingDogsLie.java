@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.WolfRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.WolfEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -70,10 +71,10 @@ public class LetSleepingDogsLie
 
         if(config.attemptModWolfSupport.get())
         {
-            Map<Class <? extends Entity>, EntityRenderer<? extends Entity >> renderers = Minecraft.getInstance().getRenderManager().renderers;
-            for(Map.Entry<Class <? extends Entity>, EntityRenderer<? extends Entity >> e : renderers.entrySet())
+            Map<EntityType<?>, EntityRenderer<?>> renderers = Minecraft.getInstance().getRenderManager().renderers;
+            for(Map.Entry<EntityType<?>, EntityRenderer<? extends Entity >> e : renderers.entrySet())
             {
-                if(e.getKey() != WolfEntity.class && e.getValue() instanceof WolfRenderer && ((WolfRenderer)e.getValue()).entityModel.getClass().equals(net.minecraft.client.renderer.entity.model.WolfModel.class)) //we don't do the entity wolf here, just look for mod mobs
+                if(e.getKey() != EntityType.WOLF && e.getValue() instanceof WolfRenderer && ((WolfRenderer)e.getValue()).entityModel.getClass().equals(net.minecraft.client.renderer.entity.model.WolfModel.class)) //we don't do the entity wolf here, just look for mod mobs
                 {
                     ((WolfRenderer)e.getValue()).entityModel = new WolfModel();
                     replaced = true;
@@ -83,7 +84,7 @@ public class LetSleepingDogsLie
             }
         }
 
-        EntityRenderer<WolfEntity> renderer = Minecraft.getInstance().getRenderManager().getRenderer(WolfEntity.class);
+        EntityRenderer<?> renderer = Minecraft.getInstance().getRenderManager().renderers.get(EntityType.WOLF);
         if(renderer instanceof WolfRenderer)
         {
             WolfRenderer renderWolf = (WolfRenderer)renderer;
