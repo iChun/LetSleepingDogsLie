@@ -50,7 +50,7 @@ public class WolfModel<T extends WolfEntity> extends net.minecraft.client.render
         this.legBackRight.rotateAngleZ = this.legBackLeft.rotateAngleZ = this.legFrontRight.rotateAngleZ = this.legFrontLeft.rotateAngleZ = 0F;
         this.mane.rotateAngleY = this.body.rotateAngleY = 0F;
         this.mane.rotateAngleZ = this.body.rotateAngleZ = 0F;
-        this.field_228299_l_.rotateAngleZ = 0F;
+        this.tailChild.rotateAngleZ = 0F;
         //END RESET POSITIONS
 
         if (entitywolf.isSitting())
@@ -195,7 +195,7 @@ public class WolfModel<T extends WolfEntity> extends net.minecraft.client.render
                         this.body.rotateAngleZ = -0.610865F;
 
                         this.tail.setRotationPoint(-2.0F, 19.8F, 8.0F);
-                        this.field_228299_l_.rotateAngleZ = -0.610865F;
+                        this.tailChild.rotateAngleZ = -0.610865F;
 
                         this.legBackRight.setRotationPoint(-0.2F, 23.5F, 6.5F);
                         this.legBackRight.rotateAngleX = -halfPi;
@@ -213,7 +213,7 @@ public class WolfModel<T extends WolfEntity> extends net.minecraft.client.render
                         this.body.rotateAngleZ = 0.610865F;
 
                         this.tail.setRotationPoint(0.0F, 19.8F, 8.0F);
-                        this.field_228299_l_.rotateAngleZ = 0.610865F;
+                        this.tailChild.rotateAngleZ = 0.610865F;
 
                         this.legBackRight.setRotationPoint(-1.5F, 23.0F, 7.0F);
                         this.legBackRight.rotateAngleX = -halfPi;
@@ -291,7 +291,7 @@ public class WolfModel<T extends WolfEntity> extends net.minecraft.client.render
 
                 this.mane.rotateAngleZ = entitywolf.getShakeAngle(partialTickTime, -0.08F);
                 this.body.rotateAngleZ = entitywolf.getShakeAngle(partialTickTime, -0.16F);
-                this.field_228299_l_.rotateAngleZ = entitywolf.getShakeAngle(partialTickTime, -0.2F);
+                this.tailChild.rotateAngleZ = entitywolf.getShakeAngle(partialTickTime, -0.2F);
             }
         }
         else
@@ -313,10 +313,10 @@ public class WolfModel<T extends WolfEntity> extends net.minecraft.client.render
 
             this.mane.rotateAngleZ = entitywolf.getShakeAngle(partialTickTime, -0.08F);
             this.body.rotateAngleZ = entitywolf.getShakeAngle(partialTickTime, -0.16F);
-            this.field_228299_l_.rotateAngleZ = entitywolf.getShakeAngle(partialTickTime, -0.2F);
+            this.tailChild.rotateAngleZ = entitywolf.getShakeAngle(partialTickTime, -0.2F);
         }
 
-        this.field_228298_b_.rotateAngleZ = entitywolf.getInterestedAngle(partialTickTime) + entitywolf.getShakeAngle(partialTickTime, 0.0F);
+        this.headChild.rotateAngleZ = entitywolf.getInterestedAngle(partialTickTime) + entitywolf.getShakeAngle(partialTickTime, 0.0F);
     }
 
     @Override
