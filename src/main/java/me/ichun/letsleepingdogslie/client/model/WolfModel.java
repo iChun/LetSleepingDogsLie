@@ -35,7 +35,7 @@ public class WolfModel<T extends WolfEntity> extends net.minecraft.client.render
     @Override
     public void setLivingAnimations(WolfEntity entitywolf, float limbSwing, float limbSwingAmount, float partialTickTime)
     {
-        if (entitywolf.isAngry())
+        if (entitywolf.func_233678_J__()) //isAngry()
         {
             this.tail.rotateAngleY = 0.0F;
         }
@@ -53,7 +53,7 @@ public class WolfModel<T extends WolfEntity> extends net.minecraft.client.render
         this.tailChild.rotateAngleZ = 0F;
         //END RESET POSITIONS
 
-        if (entitywolf.isSitting())
+        if (entitywolf.func_233684_eK_()) //isSitting
         {
             EventHandler.WolfInfo info = LetSleepingDogsLie.eventHandler.getWolfInfo(entitywolf);
             if(info.isLying())
@@ -67,7 +67,7 @@ public class WolfModel<T extends WolfEntity> extends net.minecraft.client.render
                 this.mane.rotateAngleX = halfPi;
                 this.mane.rotateAngleY = 0.0F;
 
-                if(entitywolf.getName().equals("iChun"))
+                if(entitywolf.getName().getUnformattedComponentText().equals("iChun"))
                 {
                     this.body.rotateAngleY = this.mane.rotateAngleY = ((entitywolf.ticksExisted + partialTickTime) / 3.5F);
                     this.body.rotateAngleZ = this.mane.rotateAngleZ = ((entitywolf.ticksExisted + partialTickTime) / 3.5F);

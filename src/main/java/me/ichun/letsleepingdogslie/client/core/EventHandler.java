@@ -108,7 +108,7 @@ public class EventHandler
             {
                 return false;
             }
-            if(parent.isSitting())
+            if(parent.func_233684_eK_()) //isSitting()
             {
                 boolean isLying = isLying();
                 sitTime++;
