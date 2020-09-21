@@ -53,7 +53,7 @@ public class WolfModel<T extends WolfEntity> extends net.minecraft.client.render
         this.tailChild.rotateAngleZ = 0F;
         //END RESET POSITIONS
 
-        if (entitywolf.func_233684_eK_()) //isSitting
+        if (entitywolf.isSleeping()) //func_233684_eK_() = isSitting() (1.16.3+ = isSleeping?? [more like client-side flag])
         {
             EventHandler.WolfInfo info = LetSleepingDogsLie.eventHandler.getWolfInfo(entitywolf);
             if(info.isLying())

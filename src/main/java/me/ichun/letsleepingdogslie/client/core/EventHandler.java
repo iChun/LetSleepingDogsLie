@@ -108,7 +108,7 @@ public class EventHandler
             {
                 return false;
             }
-            if(parent.func_233684_eK_()) //isSitting()
+            if(parent.isSleeping()) //func_233684_eK_() = isSitting() (1.16.3+ = isSleeping?? [more like client-side flag])
             {
                 boolean isLying = isLying();
                 sitTime++;
