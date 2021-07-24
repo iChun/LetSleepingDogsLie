@@ -5,23 +5,20 @@ import me.ichun.letsleepingdogslie.client.model.WolfModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.WolfRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.passive.WolfEntity;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.ExtensionPoint;
+import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.network.FMLNetworkConstants;
-import org.apache.commons.lang3.tuple.Pair;
+import net.minecraftforge.fmllegacy.network.FMLNetworkConstants;
 import org.apache.logging.log4j.*;
 
 import java.util.ArrayList;
@@ -45,12 +42,12 @@ public class LetSleepingDogsLie
     {
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             setupConfig();
-            FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
+            MinecraftForge.EVENT_BUS.addListener(this::onClientTick);
         });
         DistExecutor.unsafeRunWhenOn(Dist.DEDICATED_SERVER, () -> () -> LOGGER.log(Level.ERROR, "You are loading " + MOD_NAME + " on a server. " + MOD_NAME + " is a client only mod!"));
 
         //Make sure the mod being absent on the other network side does not cause the client to display the server as incompatible
-        ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST, () -> Pair.of(() -> FMLNetworkConstants.IGNORESERVERONLY, (a, b) -> true));
+        ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(() -> FMLNetworkConstants.IGNORESERVERONLY, (a, b) -> true));
     }
 
     private void setupConfig()
@@ -64,8 +61,23 @@ public class LetSleepingDogsLie
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, configBuilder.build(), MOD_ID + ".toml");
     }
 
+
+    private boolean hasLoadingGui = false;
     @OnlyIn(Dist.CLIENT)
-    private void processIMC(final InterModProcessEvent event)
+    private void onClientTick(TickEvent.ClientTickEvent event)
+    {
+        if(event.phase == TickEvent.Phase.END)
+        {
+            if(Minecraft.getInstance().getOverlay() == null && hasLoadingGui)
+            {
+                injectWolfModel();
+            }
+            hasLoadingGui = Minecraft.getInstance().getOverlay() != null;
+        }
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private void injectWolfModel()
     {
         if(ModList.get().isLoaded("doggytalents"))
         {
@@ -77,12 +89,12 @@ public class LetSleepingDogsLie
 
         if(config.attemptModWolfSupport.get())
         {
-            Map<EntityType<?>, EntityRenderer<?>> renderers = Minecraft.getInstance().getRenderManager().renderers;
+            Map<EntityType<?>, EntityRenderer<?>> renderers = Minecraft.getInstance().getEntityRenderDispatcher().renderers;
             for(Map.Entry<EntityType<?>, EntityRenderer<? extends Entity >> e : renderers.entrySet())
             {
-                if(e.getKey() != EntityType.WOLF && e.getValue() instanceof WolfRenderer && ((WolfRenderer)e.getValue()).entityModel.getClass().equals(net.minecraft.client.renderer.entity.model.WolfModel.class)) //we don't do the entity wolf here, just look for mod mobs
+                if(e.getKey() != EntityType.WOLF && e.getValue() instanceof WolfRenderer && ((WolfRenderer)e.getValue()).model.getClass().equals(net.minecraft.client.model.WolfModel.class)) //we don't do the entity wolf here, just look for mod mobs
                 {
-                    ((WolfRenderer)e.getValue()).entityModel = new WolfModel();
+                    ((WolfRenderer)e.getValue()).model = new WolfModel();
                     replaced = true;
 
                     LOGGER.info(MOD_WOLF_SUPPORT, "Overrode " + e.getValue().getClass().getSimpleName() + " model.");
@@ -90,27 +102,26 @@ public class LetSleepingDogsLie
             }
         }
 
-        EntityRenderer<?> renderer = Minecraft.getInstance().getRenderManager().renderers.get(EntityType.WOLF);
+        EntityRenderer<?> renderer = Minecraft.getInstance().getEntityRenderDispatcher().renderers.get(EntityType.WOLF);
         if(renderer instanceof WolfRenderer)
         {
             WolfRenderer renderWolf = (WolfRenderer)renderer;
-            if(renderWolf.entityModel.getClass().equals(net.minecraft.client.renderer.entity.model.WolfModel.class)) //It's a vanilla wolf model
+            if(renderWolf.model.getClass().equals(net.minecraft.client.model.WolfModel.class)) //It's a vanilla wolf model
             {
-                renderWolf.entityModel = new WolfModel();
+                renderWolf.model = new WolfModel();
                 replaced = true;
 
                 LOGGER.info(INIT, "Overrode Vanilla Wolf model. We are ready!");
             }
             else
             {
-                LOGGER.error(INIT, "RenderWolf model is not ModelWolf, so we won't do anything!");
+                LOGGER.error(INIT, "WolfRenderer model is not WolfModel, so we won't do anything! {}", renderWolf.model.getClass().getSimpleName());
             }
         }
         else
         {
-            LOGGER.error(INIT, "Wolf renderer isn't RenderWolf, so we won't do anything!");
+            LOGGER.error(INIT, "Wolf renderer isn't WolfRenderer, so we won't do anything! {}", renderer != null ? renderer.getClass().getSimpleName() : "null");
         }
-
 
         if(replaced)
         {

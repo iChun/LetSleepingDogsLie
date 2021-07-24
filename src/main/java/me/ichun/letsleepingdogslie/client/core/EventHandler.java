@@ -2,11 +2,11 @@ package me.ichun.letsleepingdogslie.client.core;
 
 import me.ichun.letsleepingdogslie.common.LetSleepingDogsLie;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.passive.WolfEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.SoundEvents;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
@@ -28,14 +28,14 @@ public class EventHandler
 
     public int worldLoadCooldown = 0;
 
-    public WeakHashMap<WolfEntity, WolfInfo> wolfInfo = new WeakHashMap<>();
+    public WeakHashMap<Wolf, WolfInfo> wolfInfo = new WeakHashMap<>();
 
     @SubscribeEvent
     public void onEntityJoinWorld(EntityJoinWorldEvent event)
     {
-        if(event.getWorld().isRemote && event.getEntity() instanceof WolfEntity)
+        if(event.getWorld().isClientSide && event.getEntity() instanceof Wolf)
         {
-            WolfEntity wolf = (WolfEntity)event.getEntity();
+            Wolf wolf = (Wolf)event.getEntity();
             if(!wolfInfo.containsKey(wolf))
             {
                 wolfInfo.put(wolf, new WolfInfo(LetSleepingDogsLie.config.dogsSpawnLying.get() && worldLoadCooldown > 0));
@@ -50,7 +50,7 @@ public class EventHandler
         {
             worldLoadCooldown--;
 
-            if(!Minecraft.getInstance().isGamePaused())
+            if(!Minecraft.getInstance().isPaused())
             {
                 wolfInfo.entrySet().removeIf(e -> !e.getValue().tick(e.getKey()));
             }
@@ -76,7 +76,7 @@ public class EventHandler
     }
 
     @Nonnull
-    public WolfInfo getWolfInfo(WolfEntity wolf)
+    public WolfInfo getWolfInfo(Wolf wolf)
     {
         if(wolfInfo.containsKey(wolf))
         {
@@ -102,33 +102,33 @@ public class EventHandler
             sitTime = lying ? LetSleepingDogsLie.config.timeBeforeLie.get() : 0;
         }
 
-        public boolean tick(WolfEntity parent)
+        public boolean tick(Wolf parent)
         {
-            if(parent.removed)
+            if(parent.isRemoved())
             {
                 return false;
             }
-            if(parent.isEntitySleeping()) //func_233684_eK_() = isEntitySleeping()
+            if(parent.isInSittingPose()) //isInSittingPose() = isEntitySleeping()
             {
                 boolean isLying = isLying();
                 sitTime++;
 
                 if(!isLying && isLying() && worldLoadCooldown < 0)
                 {
-                    parent.getEntityWorld().playSound(parent.getPosX(), parent.getPosY() + parent.getEyeHeight(), parent.getPosZ(), SoundEvents.ENTITY_WOLF_WHINE, parent.getSoundCategory(), 0.4F, parent.isChild() ? (parent.getRNG().nextFloat() - parent.getRNG().nextFloat()) * 0.2F + 1.5F : (parent.getRNG().nextFloat() - parent.getRNG().nextFloat()) * 0.2F + 1.0F, false);
+                    parent.getCommandSenderWorld().playLocalSound(parent.getX(), parent.getY() + parent.getEyeHeight(), parent.getZ(), SoundEvents.WOLF_WHINE, parent.getSoundSource(), 0.4F, parent.isBaby() ? (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.5F : (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.0F, false);
                 }
 
                 LetSleepingDogsLie.GetsUpFor getsUpFor = LetSleepingDogsLie.config.getsUpTo.get();
-                if(parent.ticksExisted % 10 == 0 && getsUpFor != LetSleepingDogsLie.GetsUpFor.NOBODY && LetSleepingDogsLie.config.rangeBeforeGettingUp.get() > 0.1D)
+                if(parent.tickCount % 10 == 0 && getsUpFor != LetSleepingDogsLie.GetsUpFor.NOBODY && LetSleepingDogsLie.config.rangeBeforeGettingUp.get() > 0.1D)
                 {
-                    List<Entity> ents = parent.getEntityWorld().getEntitiesWithinAABBExcludingEntity(parent, parent.getBoundingBox().grow(LetSleepingDogsLie.config.rangeBeforeGettingUp.get()));
-                    if(ents.stream().anyMatch(entity -> (getsUpFor == LetSleepingDogsLie.GetsUpFor.OWNER && entity instanceof LivingEntity && parent.isOwner((LivingEntity)entity) ||
-                            getsUpFor == LetSleepingDogsLie.GetsUpFor.PLAYERS && entity instanceof PlayerEntity && !entity.isSpectator() ||
-                            getsUpFor == LetSleepingDogsLie.GetsUpFor.ANY_LIVING_ENTITY && entity instanceof LivingEntity && !(entity instanceof PlayerEntity && entity.isSpectator())) && parent.canEntityBeSeen(entity)))
+                    List<Entity> ents = parent.getCommandSenderWorld().getEntities(parent, parent.getBoundingBox().inflate(LetSleepingDogsLie.config.rangeBeforeGettingUp.get()));
+                    if(ents.stream().anyMatch(entity -> (getsUpFor == LetSleepingDogsLie.GetsUpFor.OWNER && entity instanceof LivingEntity && parent.isOwnedBy((LivingEntity)entity) ||
+                            getsUpFor == LetSleepingDogsLie.GetsUpFor.PLAYERS && entity instanceof Player && !entity.isSpectator() ||
+                            getsUpFor == LetSleepingDogsLie.GetsUpFor.ANY_LIVING_ENTITY && entity instanceof LivingEntity && !(entity instanceof Player && entity.isSpectator())) && parent.hasLineOfSight(entity)))
                     {
                         if(isLying)
                         {
-                            parent.getEntityWorld().playSound(parent.getPosX(), parent.getPosY() + parent.getEyeHeight(), parent.getPosZ(), SoundEvents.ENTITY_WOLF_AMBIENT, parent.getSoundCategory(), 0.4F, parent.isChild() ? (parent.getRNG().nextFloat() - parent.getRNG().nextFloat()) * 0.2F + 1.5F : (parent.getRNG().nextFloat() - parent.getRNG().nextFloat()) * 0.2F + 1.0F, false);
+                            parent.getCommandSenderWorld().playLocalSound(parent.getX(), parent.getY() + parent.getEyeHeight(), parent.getZ(), SoundEvents.WOLF_AMBIENT, parent.getSoundSource(), 0.4F, parent.isBaby() ? (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.5F : (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.0F, false);
                         }
                         sitTime = 0;
                         setPoses = null;
@@ -149,7 +149,7 @@ public class EventHandler
             return sitTime > LetSleepingDogsLie.config.timeBeforeLie.get();
         }
 
-        public String[] getCompatiblePoses(WolfEntity parent)
+        public String[] getCompatiblePoses(Wolf parent)
         {
             if(setPoses == null)
             {
@@ -159,7 +159,7 @@ public class EventHandler
                 ArrayList<String> rear = new ArrayList<>();
                 for(String s : LetSleepingDogsLie.config.enabledPoses.get())
                 {
-                    if(s.startsWith("foreleg") && (!parent.isChild() || (s.equalsIgnoreCase("forelegSprawledBack") || s.equalsIgnoreCase("forelegSide"))))
+                    if(s.startsWith("foreleg") && (!parent.isBaby() || (s.equalsIgnoreCase("forelegSprawledBack") || s.equalsIgnoreCase("forelegSide"))))
                     {
                         front.add(s);
                     }
@@ -171,7 +171,7 @@ public class EventHandler
 
                 if(front.isEmpty())
                 {
-                    if(!parent.isChild())
+                    if(!parent.isBaby())
                     {
                         front.add("forelegStraight");
                         front.add("forelegSprawled");
