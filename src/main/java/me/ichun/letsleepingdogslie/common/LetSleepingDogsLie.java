@@ -9,16 +9,17 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fmllegacy.network.FMLNetworkConstants;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.network.NetworkConstants;
 import org.apache.logging.log4j.*;
 
 import java.util.ArrayList;
@@ -42,12 +43,12 @@ public class LetSleepingDogsLie
     {
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             setupConfig();
-            MinecraftForge.EVENT_BUS.addListener(this::onClientTick);
+            FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onAddLayers);
         });
         DistExecutor.unsafeRunWhenOn(Dist.DEDICATED_SERVER, () -> () -> LOGGER.log(Level.ERROR, "You are loading " + MOD_NAME + " on a server. " + MOD_NAME + " is a client only mod!"));
 
         //Make sure the mod being absent on the other network side does not cause the client to display the server as incompatible
-        ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(() -> FMLNetworkConstants.IGNORESERVERONLY, (a, b) -> true));
+        ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (a, b) -> true));
     }
 
     private void setupConfig()
@@ -62,22 +63,8 @@ public class LetSleepingDogsLie
     }
 
 
-    private boolean hasLoadingGui = false;
     @OnlyIn(Dist.CLIENT)
-    private void onClientTick(TickEvent.ClientTickEvent event)
-    {
-        if(event.phase == TickEvent.Phase.END)
-        {
-            if(Minecraft.getInstance().getOverlay() == null && hasLoadingGui)
-            {
-                injectWolfModel();
-            }
-            hasLoadingGui = Minecraft.getInstance().getOverlay() != null;
-        }
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    private void injectWolfModel()
+    private void onAddLayers(EntityRenderersEvent.AddLayers event)
     {
         if(ModList.get().isLoaded("doggytalents"))
         {
@@ -103,9 +90,8 @@ public class LetSleepingDogsLie
         }
 
         EntityRenderer<?> renderer = Minecraft.getInstance().getEntityRenderDispatcher().renderers.get(EntityType.WOLF);
-        if(renderer instanceof WolfRenderer)
+        if(renderer instanceof WolfRenderer renderWolf)
         {
-            WolfRenderer renderWolf = (WolfRenderer)renderer;
             if(renderWolf.model.getClass().equals(net.minecraft.client.model.WolfModel.class)) //It's a vanilla wolf model
             {
                 renderWolf.model = new WolfModel();
@@ -123,7 +109,7 @@ public class LetSleepingDogsLie
             LOGGER.error(INIT, "Wolf renderer isn't WolfRenderer, so we won't do anything! {}", renderer != null ? renderer.getClass().getSimpleName() : "null");
         }
 
-        if(replaced)
+        if(replaced && eventHandler == null)
         {
             MinecraftForge.EVENT_BUS.register(eventHandler = new EventHandler());
         }

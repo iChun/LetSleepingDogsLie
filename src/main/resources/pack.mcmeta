@@ -1,6 +1,6 @@
 {
-   "pack":{
-      "pack_format":6,
-      "description":"Let Sleeping Dogs Lie"
+   "pack": {
+      "description": "Let Sleeping Dogs Lie",
+      "pack_format": 8
    }
 }
