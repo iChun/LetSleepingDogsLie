@@ -71,7 +71,7 @@ public class WolfModel<T extends Wolf> extends net.minecraft.client.model.WolfMo
                 this.upperBody.xRot = halfPi;
                 this.upperBody.yRot = 0.0F;
 
-                if(entitywolf.getName().getContents().equals("iChun"))
+                if(entitywolf.getName().getString().equals("iChun"))
                 {
                     this.body.yRot = this.upperBody.yRot = ((entitywolf.tickCount + partialTickTime) / 3.5F);
                     this.body.zRot = this.upperBody.zRot = ((entitywolf.tickCount + partialTickTime) / 3.5F);
