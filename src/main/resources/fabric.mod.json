@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "dogslie",
+  "version": "${version}",
+
+  "name": "Let Sleeping Dogs Lie",
+  "description": "Lets dogs lie.",
+  "authors": [
+    "iChun"
+  ],
+  "contact": {
+    "homepage": "https://github.com/iChun/LetSleepingDogsLie",
+    "issues": "https://github.com/iChun/LetSleepingDogsLie/issues"
+  },
+
+  "license": "GNU Lesser General Public License v3.0",
+
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "me.ichun.mods.dogslie.loader.fabric.LoaderFabricClient"
+    ]
+  },
+
+  "mixins": [
+    "dogslie.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.14.11",
+    "fabric-api": "*",
+    "minecraft": "1.18.x",
+    "java": ">=17",
+    "completeconfig": ">=1.4.0 <2.0.0"
+  }
+}

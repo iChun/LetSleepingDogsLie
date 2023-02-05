@@ -1,70 +1,54 @@
-package me.ichun.letsleepingdogslie.client.core;
+package me.ichun.mods.dogslie.common.core;
 
-import me.ichun.letsleepingdogslie.common.LetSleepingDogsLie;
+import me.ichun.mods.dogslie.common.LetSleepingDogsLie;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.WeakHashMap;
 
-@OnlyIn(Dist.CLIENT)
-public class EventHandler
+public abstract class EventHandlerClient
 {
     public Random rand = new Random();
 
-    public int worldLoadCooldown = 0;
-
     public WeakHashMap<Wolf, WolfInfo> wolfInfo = new WeakHashMap<>();
 
-    @SubscribeEvent
-    public void onEntityJoinWorld(EntityJoinWorldEvent event)
+    public abstract void fireClientLevelLoad(ClientLevel level);
+
+    public void onEntityJoinLevel(Level level, Entity entity)
     {
-        if(event.getWorld().isClientSide && event.getEntity() instanceof Wolf)
+        if(level.isClientSide && entity instanceof Wolf wolf)
         {
-            Wolf wolf = (Wolf)event.getEntity();
             if(!wolfInfo.containsKey(wolf))
             {
-                wolfInfo.put(wolf, new WolfInfo(LetSleepingDogsLie.config.dogsSpawnLying.get() && worldLoadCooldown > 0));
+                wolfInfo.put(wolf, new WolfInfo(LetSleepingDogsLie.config.dogsSpawnLying.get() && Minecraft.getInstance().cameraEntity != null && Minecraft.getInstance().cameraEntity.tickCount < 20));
             }
         }
     }
 
-    @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event)
+    public void onClientTickEnd(Minecraft client)
     {
-        if(event.phase == TickEvent.Phase.END)
+        if(!client.isPaused())
         {
-            worldLoadCooldown--;
-
-            if(!Minecraft.getInstance().isPaused())
-            {
-                wolfInfo.entrySet().removeIf(e -> !e.getValue().tick(e.getKey()));
-            }
+            wolfInfo.entrySet().removeIf(e -> !e.getValue().tick(e.getKey()));
         }
     }
 
-    @SubscribeEvent
-    public void onWorldLoad(WorldEvent.Load event)
+    public void onLevelLoad()
     {
         Minecraft.getInstance().execute(this::clean);
     }
 
-    @SubscribeEvent
-    public void onLoggedOutEvent(ClientPlayerNetworkEvent.LoggedOutEvent event)
+    public void onClientDisconnected()
     {
         Minecraft.getInstance().execute(this::clean);
     }
@@ -72,22 +56,12 @@ public class EventHandler
     public void clean()
     {
         wolfInfo.clear();
-        worldLoadCooldown = 20;
     }
 
-    @Nonnull
+    @NotNull
     public WolfInfo getWolfInfo(Wolf wolf)
     {
-        if(wolfInfo.containsKey(wolf))
-        {
-            return wolfInfo.get(wolf);
-        }
-        else
-        {
-            WolfInfo info = new WolfInfo(LetSleepingDogsLie.config.dogsSpawnLying.get() && worldLoadCooldown > 0);
-            wolfInfo.put(wolf, info);
-            return info;
-        }
+        return wolfInfo.computeIfAbsent(wolf, w -> new WolfInfo(LetSleepingDogsLie.config.dogsSpawnLying.get() && Minecraft.getInstance().cameraEntity != null && Minecraft.getInstance().cameraEntity.tickCount < 20));
     }
 
 
@@ -113,7 +87,7 @@ public class EventHandler
                 boolean isLying = isLying();
                 sitTime++;
 
-                if(!isLying && isLying() && worldLoadCooldown < 0)
+                if(!isLying && isLying() && Minecraft.getInstance().cameraEntity != null && Minecraft.getInstance().cameraEntity.tickCount > 20)
                 {
                     parent.getCommandSenderWorld().playLocalSound(parent.getX(), parent.getY() + parent.getEyeHeight(), parent.getZ(), SoundEvents.WOLF_WHINE, parent.getSoundSource(), 0.4F, parent.isBaby() ? (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.5F : (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.0F, false);
                 }
@@ -123,8 +97,8 @@ public class EventHandler
                 {
                     List<Entity> ents = parent.getCommandSenderWorld().getEntities(parent, parent.getBoundingBox().inflate(LetSleepingDogsLie.config.rangeBeforeGettingUp.get()));
                     if(ents.stream().anyMatch(entity -> (getsUpFor == LetSleepingDogsLie.GetsUpFor.OWNER && entity instanceof LivingEntity && parent.isOwnedBy((LivingEntity)entity) ||
-                            getsUpFor == LetSleepingDogsLie.GetsUpFor.PLAYERS && entity instanceof Player && !entity.isSpectator() ||
-                            getsUpFor == LetSleepingDogsLie.GetsUpFor.ANY_LIVING_ENTITY && entity instanceof LivingEntity && !(entity instanceof Player && entity.isSpectator())) && parent.hasLineOfSight(entity)))
+                        getsUpFor == LetSleepingDogsLie.GetsUpFor.PLAYERS && entity instanceof Player && !entity.isSpectator() ||
+                        getsUpFor == LetSleepingDogsLie.GetsUpFor.ANY_LIVING_ENTITY && entity instanceof LivingEntity && !(entity instanceof Player && entity.isSpectator())) && parent.hasLineOfSight(entity)))
                     {
                         if(isLying)
                         {

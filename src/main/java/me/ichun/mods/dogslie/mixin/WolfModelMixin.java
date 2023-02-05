@@ -1,7 +1,9 @@
-package me.ichun.letsleepingdogslie.client.model;
+package me.ichun.mods.dogslie.mixin;
 
-import me.ichun.letsleepingdogslie.client.core.EventHandler;
-import me.ichun.letsleepingdogslie.common.LetSleepingDogsLie;
+import me.ichun.mods.dogslie.common.LetSleepingDogsLie;
+import me.ichun.mods.dogslie.common.core.EventHandlerClient;
+import net.minecraft.client.model.WolfModel;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
@@ -9,16 +11,65 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Wolf;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-public class WolfModel<T extends Wolf> extends net.minecraft.client.model.WolfModel<T>
+@Mixin(WolfModel.class)
+public abstract class WolfModelMixin
 {
-    public WolfModel()
-    {
-        super(createModel().bakeRoot());
-    }
+    @Shadow
+    @Final
+    @Mutable
+    private ModelPart head;
+    @Shadow
+    @Final
+    @Mutable
+    private ModelPart realHead;
+    @Shadow
+    @Final
+    @Mutable
+    private ModelPart body;
+    @Shadow
+    @Final
+    @Mutable
+    private ModelPart rightHindLeg;
+    @Shadow
+    @Final
+    @Mutable
+    private ModelPart leftHindLeg;
+    @Shadow
+    @Final
+    @Mutable
+    private ModelPart rightFrontLeg;
+    @Shadow
+    @Final
+    @Mutable
+    private ModelPart leftFrontLeg;
+    @Shadow
+    @Final
+    @Mutable
+    private ModelPart tail;
+    @Shadow
+    @Final
+    @Mutable
+    private ModelPart realTail;
+    @Shadow
+    @Final
+    @Mutable
+    private ModelPart upperBody;
 
-    //Taken from WolfModel
-    private static LayerDefinition createModel() {
+
+    @Inject(method = "createBodyLayer", at = @At("HEAD"), cancellable = true)
+    private static void createBodyLayer(CallbackInfoReturnable<LayerDefinition> cir)
+    {
+        //Override the original wolf model with our fixed offsets
+
         MeshDefinition var0 = new MeshDefinition();
         PartDefinition var1 = var0.getRoot();
         PartDefinition var3 = var1.addOrReplaceChild("head", CubeListBuilder.create(), PartPose.offset(-1.0F, 13.5F, -7.0F));
@@ -32,14 +83,13 @@ public class WolfModel<T extends Wolf> extends net.minecraft.client.model.WolfMo
         var1.addOrReplaceChild("left_front_leg", var4, PartPose.offset(1.5F, 23.0F, -4.0F));
         PartDefinition var5 = var1.addOrReplaceChild("tail", CubeListBuilder.create(), PartPose.offsetAndRotation(-1.0F, 12.0F, 8.0F, 0.62831855F, 0.0F, 0.0F));
         var5.addOrReplaceChild("real_tail", CubeListBuilder.create().texOffs(9, 18).addBox(0.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F), PartPose.ZERO);
-        return LayerDefinition.create(var0, 64, 32);
+        cir.setReturnValue(LayerDefinition.create(var0, 64, 32));
     }
 
-
-    @Override
-    public void prepareMobModel(Wolf entitywolf, float limbSwing, float limbSwingAmount, float partialTickTime)
+    @Inject(method = "prepareMobModel(Lnet/minecraft/world/entity/animal/Wolf;FFF)V", at = @At("HEAD"), cancellable = true)
+    private void prepareMobModel(Wolf wolf, float limbSwing, float limbSwingAmount, float partialTick, CallbackInfo ci)
     {
-        if (entitywolf.isAngry())
+        if (wolf.isAngry())
         {
             this.tail.yRot = 0.0F;
         }
@@ -57,34 +107,34 @@ public class WolfModel<T extends Wolf> extends net.minecraft.client.model.WolfMo
         this.realTail.zRot = 0F;
         //END RESET POSITIONS
 
-        if (entitywolf.isInSittingPose()) //isInSittingPose() = isEntitySleeping()
+        if (wolf.isInSittingPose()) //isInSittingPose() = isEntitySleeping()
         {
-            EventHandler.WolfInfo info = LetSleepingDogsLie.eventHandler.getWolfInfo(entitywolf);
+            EventHandlerClient.WolfInfo info = LetSleepingDogsLie.eventHandlerClient.getWolfInfo(wolf);
             if(info.isLying())
             {
                 float halfPi = ((float)Math.PI / 2F);
 
-                String[] poses = info.getCompatiblePoses(entitywolf);
+                String[] poses = info.getCompatiblePoses(wolf);
 
                 //mane flat; set the front
                 this.upperBody.setPos(0.0F, 20.9F, -3.0F);
                 this.upperBody.xRot = halfPi;
                 this.upperBody.yRot = 0.0F;
 
-                if(entitywolf.getName().getContents().equals("iChun"))
+                if(wolf.getName().getString().equals("iChun"))
                 {
-                    this.body.yRot = this.upperBody.yRot = ((entitywolf.tickCount + partialTickTime) / 3.5F);
-                    this.body.zRot = this.upperBody.zRot = ((entitywolf.tickCount + partialTickTime) / 3.5F);
+                    this.body.yRot = this.upperBody.yRot = ((wolf.tickCount + partialTick) / 3.5F);
+                    this.body.zRot = this.upperBody.zRot = ((wolf.tickCount + partialTick) / 3.5F);
 
-                    this.rightHindLeg.yRot = this.rightFrontLeg.yRot = ((entitywolf.tickCount + partialTickTime) / 3.5F);
-                    this.leftHindLeg.yRot = this.leftFrontLeg.yRot = -((entitywolf.tickCount + partialTickTime) / 3.5F);
-                    this.rightHindLeg.zRot = this.rightFrontLeg.zRot = ((entitywolf.tickCount + partialTickTime) / 5F);
-                    this.leftHindLeg.zRot = this.leftFrontLeg.zRot = -((entitywolf.tickCount + partialTickTime) / 5F);
+                    this.rightHindLeg.yRot = this.rightFrontLeg.yRot = ((wolf.tickCount + partialTick) / 3.5F);
+                    this.leftHindLeg.yRot = this.leftFrontLeg.yRot = -((wolf.tickCount + partialTick) / 3.5F);
+                    this.rightHindLeg.zRot = this.rightFrontLeg.zRot = ((wolf.tickCount + partialTick) / 5F);
+                    this.leftHindLeg.zRot = this.leftFrontLeg.zRot = -((wolf.tickCount + partialTick) / 5F);
                 }
 
                 switch(poses[0]) //front
                 {
-                    case "forelegSideL":
+                    case "forelegSideL" ->
                     {
                         this.upperBody.setPos(0.50F, 20.9F, -3.0F);
                         this.upperBody.xRot = halfPi;
@@ -99,9 +149,8 @@ public class WolfModel<T extends Wolf> extends net.minecraft.client.model.WolfMo
                         this.leftFrontLeg.setPos(1.5F, 21.0F, -3.0F);
                         this.leftFrontLeg.xRot = 0.10472F;
                         this.leftFrontLeg.zRot = -1.320342F;
-                        break;
                     }
-                    case "forelegSideR":
+                    case "forelegSideR" ->
                     {
                         this.upperBody.setPos(-0.50F, 20.9F, -3.0F);
                         this.upperBody.xRot = halfPi;
@@ -116,9 +165,8 @@ public class WolfModel<T extends Wolf> extends net.minecraft.client.model.WolfMo
                         this.leftFrontLeg.setPos(1.5F, 23.0F, -4.0F);
                         this.leftFrontLeg.xRot = -0.087266F;
                         this.leftFrontLeg.zRot = halfPi;
-                        break;
                     }
-                    case "forelegStraight":
+                    case "forelegStraight" ->
                     {
                         this.head.setPos(-1.0F, 19.0F, -7.0F);
 
@@ -127,9 +175,8 @@ public class WolfModel<T extends Wolf> extends net.minecraft.client.model.WolfMo
 
                         this.leftFrontLeg.setPos(1.5F, 23.0F, -4.0F);
                         this.leftFrontLeg.xRot = -halfPi;
-                        break;
                     }
-                    case "forelegSprawled":
+                    case "forelegSprawled" ->
                     {
                         this.head.setPos(-1.0F, 20.4F, -7.0F);
 
@@ -140,9 +187,8 @@ public class WolfModel<T extends Wolf> extends net.minecraft.client.model.WolfMo
                         this.leftFrontLeg.setPos(1.5F, 23.0F, -4.0F);
                         this.leftFrontLeg.xRot = -halfPi;
                         this.leftFrontLeg.yRot = -0.63739424F;
-                        break;
                     }
-                    case "forelegSprawledBack":
+                    case "forelegSprawledBack" ->
                     {
                         this.head.setPos(-1.0F, 21F, -7.0F);
 
@@ -153,9 +199,8 @@ public class WolfModel<T extends Wolf> extends net.minecraft.client.model.WolfMo
                         this.leftFrontLeg.setPos(1.5F, 23.0F, -4.0F);
                         this.leftFrontLeg.xRot = halfPi;
                         this.leftFrontLeg.yRot = 0.63739424F;
-                        break;
                     }
-                    case "forelegSkewedL":
+                    case "forelegSkewedL" ->
                     {
                         this.head.setPos(-1.0F, 20.0F, -7.0F);
 
@@ -166,9 +211,8 @@ public class WolfModel<T extends Wolf> extends net.minecraft.client.model.WolfMo
                         this.leftFrontLeg.setPos(1.5F, 23.0F, -4.0F);
                         this.leftFrontLeg.xRot = -halfPi;
                         this.leftFrontLeg.yRot = -0.349066F;
-                        break;
                     }
-                    case "forelegSkewedR":
+                    case "forelegSkewedR" ->
                     {
                         this.head.setPos(-1.0F, 20.0F, -7.0F);
 
@@ -179,9 +223,8 @@ public class WolfModel<T extends Wolf> extends net.minecraft.client.model.WolfMo
                         this.leftFrontLeg.setPos(1.5F, 23.0F, -4.0F);
                         this.leftFrontLeg.xRot = -halfPi;
                         this.leftFrontLeg.yRot = 0.436332F;
-                        break;
                     }
-                    default:{}
+                    default -> {}
                 }
 
                 //body flat; set the back
@@ -192,7 +235,7 @@ public class WolfModel<T extends Wolf> extends net.minecraft.client.model.WolfMo
 
                 switch(poses[1])
                 {
-                    case "hindlegSideL":
+                    case "hindlegSideL" ->
                     {
                         this.body.setPos(0.0F, 20.9F, 2.0F);
                         this.body.xRot = halfPi;
@@ -208,9 +251,8 @@ public class WolfModel<T extends Wolf> extends net.minecraft.client.model.WolfMo
                         this.leftHindLeg.setPos(1.5F, 23.0F, 7.0F);
                         this.leftHindLeg.xRot = -halfPi;
                         this.leftHindLeg.yRot = -1.365895F;
-                        break;
                     }
-                    case "hindlegSideR":
+                    case "hindlegSideR" ->
                     {
                         this.body.setPos(0.0F, 20.9F, 2.0F);
                         this.body.xRot = halfPi;
@@ -226,27 +268,24 @@ public class WolfModel<T extends Wolf> extends net.minecraft.client.model.WolfMo
                         this.leftHindLeg.setPos(0.2F, 23.5F, 6.5F);
                         this.leftHindLeg.xRot = -halfPi;
                         this.leftHindLeg.yRot = 0.956091F;
-                        break;
                     }
-                    case "hindlegStraight":
+                    case "hindlegStraight" ->
                     {
                         this.rightHindLeg.setPos(-1.5F, 23.0F, 7.0F);
                         this.rightHindLeg.xRot = -halfPi;
 
                         this.leftHindLeg.setPos(1.5F, 23.0F, 7.0F);
                         this.leftHindLeg.xRot = -halfPi;
-                        break;
                     }
-                    case "hindlegStraightBack":
+                    case "hindlegStraightBack" ->
                     {
                         this.rightHindLeg.setPos(-1.5F, 23.0F, 7.0F);
                         this.rightHindLeg.xRot = halfPi;
 
                         this.leftHindLeg.setPos(1.5F, 23.0F, 7.0F);
                         this.leftHindLeg.xRot = halfPi;
-                        break;
                     }
-                    case "hindlegSprawled":
+                    case "hindlegSprawled" ->
                     {
                         this.rightHindLeg.setPos(-1.5F, 23.0F, 7.0F);
                         this.rightHindLeg.xRot = -halfPi;
@@ -255,9 +294,8 @@ public class WolfModel<T extends Wolf> extends net.minecraft.client.model.WolfMo
                         this.leftHindLeg.setPos(1.5F, 23.0F, 7.0F);
                         this.leftHindLeg.xRot = -halfPi;
                         this.leftHindLeg.yRot = -0.523599F;
-                        break;
                     }
-                    case "hindlegSprawledBack":
+                    case "hindlegSprawledBack" ->
                     {
                         this.rightHindLeg.setPos(-1.5F, 23.0F, 7.0F);
                         this.rightHindLeg.xRot = halfPi;
@@ -266,11 +304,10 @@ public class WolfModel<T extends Wolf> extends net.minecraft.client.model.WolfMo
                         this.leftHindLeg.setPos(1.5F, 23.0F, 7.0F);
                         this.leftHindLeg.xRot = halfPi;
                         this.leftHindLeg.yRot = 0.523599F;
-                        break;
                     }
                 }
 
-                if(this.young)
+                if(((WolfModel)(Object)this).young)
                 {
                     this.head.y -= (this.head.y - 13.5F) * 0.5F;
                 }
@@ -293,9 +330,9 @@ public class WolfModel<T extends Wolf> extends net.minecraft.client.model.WolfMo
                 this.leftFrontLeg.setPos(1.51F, 17.0F, -4.0F);
 
 
-                this.upperBody.zRot = entitywolf.getBodyRollAngle(partialTickTime, -0.08F);
-                this.body.zRot = entitywolf.getBodyRollAngle(partialTickTime, -0.16F);
-                this.realTail.zRot = entitywolf.getBodyRollAngle(partialTickTime, -0.2F);
+                this.upperBody.zRot = wolf.getBodyRollAngle(partialTick, -0.08F);
+                this.body.zRot = wolf.getBodyRollAngle(partialTick, -0.16F);
+                this.realTail.zRot = wolf.getBodyRollAngle(partialTick, -0.2F);
             }
         }
         else
@@ -315,25 +352,28 @@ public class WolfModel<T extends Wolf> extends net.minecraft.client.model.WolfMo
             this.leftFrontLeg.xRot = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
 
 
-            this.upperBody.zRot = entitywolf.getBodyRollAngle(partialTickTime, -0.08F);
-            this.body.zRot = entitywolf.getBodyRollAngle(partialTickTime, -0.16F);
-            this.realTail.zRot = entitywolf.getBodyRollAngle(partialTickTime, -0.2F);
+            this.upperBody.zRot = wolf.getBodyRollAngle(partialTick, -0.08F);
+            this.body.zRot = wolf.getBodyRollAngle(partialTick, -0.16F);
+            this.realTail.zRot = wolf.getBodyRollAngle(partialTick, -0.2F);
         }
 
-        this.realHead.zRot = entitywolf.getHeadRollAngle(partialTickTime) + entitywolf.getBodyRollAngle(partialTickTime, 0.0F);
+        this.realHead.zRot = wolf.getHeadRollAngle(partialTick) + wolf.getBodyRollAngle(partialTick, 0.0F);
+
+        ci.cancel();
     }
 
-    @Override
-    public void setupAnim(T entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch)
+    @Inject(method = "setupAnim(Lnet/minecraft/world/entity/animal/Wolf;FFFFF)V", at = @At("HEAD"), cancellable = true)
+    private void setupAnim(Wolf entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci)
     {
-        super.setupAnim(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
         this.head.xRot = headPitch * 0.017453292F;
         this.head.yRot = netHeadYaw * 0.017453292F;
         this.tail.xRot = ageInTicks; //full health = 1.7278761 ; 1 hp = 0.5340708
 
-        if (LetSleepingDogsLie.eventHandler.getWolfInfo(entityIn).isLying())
+        if (LetSleepingDogsLie.eventHandlerClient.getWolfInfo(entity).isLying())
         {
             this.tail.xRot *= 0.5796969225510672F;
         }
+
+        ci.cancel();
     }
 }
