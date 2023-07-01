@@ -15,6 +15,8 @@ public class ConfigFabric extends Config
 {
     public static General GENERAL = null;
 
+    public me.lortseam.completeconfig.data.Config configInstance;
+
     public ConfigFabric()
     {
         dogsSpawnLying = new ConfigWrapper<>(() -> GENERAL.dogsSpawnLying, v -> GENERAL.dogsSpawnLying = v);
@@ -39,21 +41,21 @@ public class ConfigFabric extends Config
             return "General configs that don't fit any other category.";
         }
 
-        @ConfigEntry(nameKey = "config.dogslie.prop.dogsSpawnLying.name", descriptionKey = "config.dogslie.prop.dogsSpawnLying.desc", comment = "Do dogs spawn into the world lying down if they are already sitting.")
+        @ConfigEntry(nameKey = "prop.dogsSpawnLying.name", descriptionKey = "prop.dogsSpawnLying.desc", comment = "Do dogs spawn into the world lying down if they are already sitting.")
         public boolean dogsSpawnLying = true;
 
-        @ConfigEntry(nameKey = "config.dogslie.prop.timeBeforeLie.name", descriptionKey = "config.dogslie.prop.timeBeforeLie.desc", comment = "Time to spend sitting (in ticks) before dogs lie down.")
+        @ConfigEntry(nameKey = "prop.timeBeforeLie.name", descriptionKey = "prop.timeBeforeLie.desc", comment = "Time to spend sitting (in ticks) before dogs lie down.")
         @ConfigEntry.BoundedInteger(min = 1, max = 6000000)
         public int timeBeforeLie = 15 * 20;
 
-        @ConfigEntry(nameKey = "config.dogslie.prop.rangeBeforeGettingUp.name", descriptionKey = "config.dogslie.prop.rangeBeforeGettingUp.desc", comment = "Range for target to get to dog before dog gets up (in blocks)")
+        @ConfigEntry(nameKey = "prop.rangeBeforeGettingUp.name", descriptionKey = "prop.rangeBeforeGettingUp.desc", comment = "Range for target to get to dog before dog gets up (in blocks)")
         @ConfigEntry.BoundedDouble(min = 0D, max = 32D)
         public double rangeBeforeGettingUp = 3D;
 
-        @ConfigEntry(nameKey = "config.dogslie.prop.getsUpTo.name", descriptionKey = "config.dogslie.prop.getsUpTo.desc", comment = "Who the dog gets up to?\nAccepts: NOBODY, OWNER, PLAYERS, ANY_LIVING_ENTITY")
+        @ConfigEntry(nameKey = "prop.getsUpTo.name", descriptionKey = "prop.getsUpTo.desc", comment = "Who the dog gets up to?\nAccepts: NOBODY, OWNER, PLAYERS, ANY_LIVING_ENTITY")
         public LetSleepingDogsLie.GetsUpFor getsUpTo = LetSleepingDogsLie.GetsUpFor.OWNER;
 
-        @ConfigEntry(nameKey = "config.dogslie.prop.enabledPoses.name", descriptionKey = "config.dogslie.prop.enabledPoses.desc", comment = "Poses for lying down that are enabled. If the mod can't find compatible poses, it will randomly pick one set.")
+        @ConfigEntry(nameKey = "prop.enabledPoses.name", descriptionKey = "prop.enabledPoses.desc", comment = "Poses for lying down that are enabled. If the mod can't find compatible poses, it will randomly pick one set.")
         public List<String> enabledPoses = new ArrayList<>(DEFAULT_POSES);
     }
 }
