@@ -41,21 +41,21 @@ public class ConfigFabric extends Config
             return "General configs that don't fit any other category.";
         }
 
-        @ConfigEntry(nameKey = "prop.dogsSpawnLying.name", descriptionKey = "prop.dogsSpawnLying.desc", comment = "Do dogs spawn into the world lying down if they are already sitting.")
+        @ConfigEntry(nameKey = "prop.dogsSpawnLying.name", descriptionKey = "prop.dogsSpawnLying.desc", comment = Reference.DOGS_SPAWN_LYING_COMMENT)
         public boolean dogsSpawnLying = true;
 
-        @ConfigEntry(nameKey = "prop.timeBeforeLie.name", descriptionKey = "prop.timeBeforeLie.desc", comment = "Time to spend sitting (in ticks) before dogs lie down.")
+        @ConfigEntry(nameKey = "prop.timeBeforeLie.name", descriptionKey = "prop.timeBeforeLie.desc", comment = Reference.TIME_BEFORE_LIE_COMMENT)
         @ConfigEntry.BoundedInteger(min = 1, max = 6000000)
         public int timeBeforeLie = 15 * 20;
 
-        @ConfigEntry(nameKey = "prop.rangeBeforeGettingUp.name", descriptionKey = "prop.rangeBeforeGettingUp.desc", comment = "Range for target to get to dog before dog gets up (in blocks)")
+        @ConfigEntry(nameKey = "prop.rangeBeforeGettingUp.name", descriptionKey = "prop.rangeBeforeGettingUp.desc", comment = Reference.RANGE_BEFORE_GETTING_UP_COMMENT)
         @ConfigEntry.BoundedDouble(min = 0D, max = 32D)
         public double rangeBeforeGettingUp = 3D;
 
-        @ConfigEntry(nameKey = "prop.getsUpTo.name", descriptionKey = "prop.getsUpTo.desc", comment = "Who the dog gets up to?\nAccepts: NOBODY, OWNER, PLAYERS, ANY_LIVING_ENTITY")
+        @ConfigEntry(nameKey = "prop.getsUpTo.name", descriptionKey = "prop.getsUpTo.desc", comment = Reference.GETS_UP_TO_COMMENT)
         public LetSleepingDogsLie.GetsUpFor getsUpTo = LetSleepingDogsLie.GetsUpFor.OWNER;
 
-        @ConfigEntry(nameKey = "prop.enabledPoses.name", descriptionKey = "prop.enabledPoses.desc", comment = "Poses for lying down that are enabled. If the mod can't find compatible poses, it will randomly pick one set.")
+        @ConfigEntry(nameKey = "prop.enabledPoses.name", descriptionKey = "prop.enabledPoses.desc", comment = Reference.ENABLED_POSES_COMMENT)
         public List<String> enabledPoses = new ArrayList<>(DEFAULT_POSES);
     }
 }

@@ -1,8 +1,8 @@
 {
    "pack": {
       "description": {
-         "text": "Let Sleeping Dogs Lie"
+         "text": "${mod_name}"
       },
-      "pack_format": 18
+      "pack_format": ${minecraft_pack_format}
    }
 }

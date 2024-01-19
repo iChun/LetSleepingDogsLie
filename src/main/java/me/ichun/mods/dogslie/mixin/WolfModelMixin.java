@@ -66,7 +66,7 @@ public abstract class WolfModelMixin
 
 
     @Inject(method = "createBodyLayer", at = @At("HEAD"), cancellable = true)
-    private static void createBodyLayer(CallbackInfoReturnable<LayerDefinition> cir)
+    private static void dogslie_createBodyLayer(CallbackInfoReturnable<LayerDefinition> cir)
     {
         //Override the original wolf model with our fixed offsets
 
@@ -87,7 +87,7 @@ public abstract class WolfModelMixin
     }
 
     @Inject(method = "prepareMobModel(Lnet/minecraft/world/entity/animal/Wolf;FFF)V", at = @At("HEAD"), cancellable = true)
-    private void prepareMobModel(Wolf wolf, float limbSwing, float limbSwingAmount, float partialTick, CallbackInfo ci)
+    private void dogslie_prepareMobModel(Wolf wolf, float limbSwing, float limbSwingAmount, float partialTick, CallbackInfo ci)
     {
         if (wolf.isAngry())
         {
@@ -363,7 +363,7 @@ public abstract class WolfModelMixin
     }
 
     @Inject(method = "setupAnim(Lnet/minecraft/world/entity/animal/Wolf;FFFFF)V", at = @At("HEAD"), cancellable = true)
-    private void setupAnim(Wolf entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci)
+    private void dogslie_setupAnim(Wolf entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci)
     {
         this.head.xRot = headPitch * 0.017453292F;
         this.head.yRot = netHeadYaw * 0.017453292F;
