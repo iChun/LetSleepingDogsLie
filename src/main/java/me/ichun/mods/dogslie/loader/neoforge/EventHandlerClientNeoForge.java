@@ -5,11 +5,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 
-public class EventHandlerClientNeoforge extends EventHandlerClient
+public class EventHandlerClientNeoForge extends EventHandlerClient
 {
     @SubscribeEvent
     public void onEntityJoinWorld(EntityJoinLevelEvent event)
@@ -18,12 +18,9 @@ public class EventHandlerClientNeoforge extends EventHandlerClient
     }
 
     @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event)
+    public void onClientTick(ClientTickEvent.Post event)
     {
-        if(event.phase == TickEvent.Phase.END)
-        {
-            onClientTickEnd(Minecraft.getInstance());
-        }
+        onClientTickEnd(Minecraft.getInstance());
     }
 
     @SubscribeEvent

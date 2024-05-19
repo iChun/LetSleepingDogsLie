@@ -1,7 +1,7 @@
 package me.ichun.mods.dogslie.loader.fabric;
 
 import me.ichun.mods.dogslie.common.core.EventHandlerClient;
-import me.ichun.mods.dogslie.loader.fabric.events.FabricClientEvents;
+import me.ichun.mods.ichunutil.api.fabric.event.client.FabricClientEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;

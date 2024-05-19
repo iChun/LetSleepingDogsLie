@@ -30,7 +30,7 @@ public abstract class EventHandlerClient
         {
             if(!wolfInfo.containsKey(wolf))
             {
-                wolfInfo.put(wolf, new WolfInfo(LetSleepingDogsLie.config.dogsSpawnLying.get() && Minecraft.getInstance().cameraEntity != null && Minecraft.getInstance().cameraEntity.tickCount < 20));
+                wolfInfo.put(wolf, new WolfInfo(LetSleepingDogsLie.config.dogsSpawnLying && Minecraft.getInstance().cameraEntity != null && Minecraft.getInstance().cameraEntity.tickCount < 20));
             }
         }
     }
@@ -61,7 +61,7 @@ public abstract class EventHandlerClient
     @NotNull
     public WolfInfo getWolfInfo(Wolf wolf)
     {
-        return wolfInfo.computeIfAbsent(wolf, w -> new WolfInfo(LetSleepingDogsLie.config.dogsSpawnLying.get() && Minecraft.getInstance().cameraEntity != null && Minecraft.getInstance().cameraEntity.tickCount < 20));
+        return wolfInfo.computeIfAbsent(wolf, w -> new WolfInfo(LetSleepingDogsLie.config.dogsSpawnLying && Minecraft.getInstance().cameraEntity != null && Minecraft.getInstance().cameraEntity.tickCount < 20));
     }
 
 
@@ -73,7 +73,7 @@ public abstract class EventHandlerClient
 
         public WolfInfo(boolean lying)
         {
-            sitTime = lying ? LetSleepingDogsLie.config.timeBeforeLie.get() : 0;
+            sitTime = lying ? LetSleepingDogsLie.config.timeBeforeLie : 0;
         }
 
         public boolean tick(Wolf parent)
@@ -92,10 +92,10 @@ public abstract class EventHandlerClient
                     parent.getCommandSenderWorld().playLocalSound(parent.getX(), parent.getY() + parent.getEyeHeight(), parent.getZ(), SoundEvents.WOLF_WHINE, parent.getSoundSource(), 0.4F, parent.isBaby() ? (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.5F : (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.0F, false);
                 }
 
-                LetSleepingDogsLie.GetsUpFor getsUpFor = LetSleepingDogsLie.config.getsUpTo.get();
-                if(parent.tickCount % 10 == 0 && getsUpFor != LetSleepingDogsLie.GetsUpFor.NOBODY && LetSleepingDogsLie.config.rangeBeforeGettingUp.get() > 0.1D)
+                LetSleepingDogsLie.GetsUpFor getsUpFor = LetSleepingDogsLie.config.getsUpTo;
+                if(parent.tickCount % 10 == 0 && getsUpFor != LetSleepingDogsLie.GetsUpFor.NOBODY && LetSleepingDogsLie.config.rangeBeforeGettingUp > 0.1D)
                 {
-                    List<Entity> ents = parent.getCommandSenderWorld().getEntities(parent, parent.getBoundingBox().inflate(LetSleepingDogsLie.config.rangeBeforeGettingUp.get()));
+                    List<Entity> ents = parent.getCommandSenderWorld().getEntities(parent, parent.getBoundingBox().inflate(LetSleepingDogsLie.config.rangeBeforeGettingUp));
                     if(ents.stream().anyMatch(entity -> (getsUpFor == LetSleepingDogsLie.GetsUpFor.OWNER && entity instanceof LivingEntity && parent.isOwnedBy((LivingEntity)entity) ||
                         getsUpFor == LetSleepingDogsLie.GetsUpFor.PLAYERS && entity instanceof Player && !entity.isSpectator() ||
                         getsUpFor == LetSleepingDogsLie.GetsUpFor.ANY_LIVING_ENTITY && entity instanceof LivingEntity && !(entity instanceof Player && entity.isSpectator())) && parent.hasLineOfSight(entity)))
@@ -120,7 +120,7 @@ public abstract class EventHandlerClient
 
         public boolean isLying()
         {
-            return sitTime > LetSleepingDogsLie.config.timeBeforeLie.get();
+            return sitTime > LetSleepingDogsLie.config.timeBeforeLie;
         }
 
         public String[] getCompatiblePoses(Wolf parent)
@@ -131,7 +131,7 @@ public abstract class EventHandlerClient
 
                 ArrayList<String> front = new ArrayList<>();
                 ArrayList<String> rear = new ArrayList<>();
-                for(String s : LetSleepingDogsLie.config.enabledPoses.get())
+                for(String s : LetSleepingDogsLie.config.enabledPoses)
                 {
                     if(s.startsWith("foreleg") && (!parent.isBaby() || (s.equalsIgnoreCase("forelegSprawledBack") || s.equalsIgnoreCase("forelegSide"))))
                     {

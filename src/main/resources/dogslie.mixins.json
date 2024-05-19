@@ -7,8 +7,6 @@
   "mixins": [
   ],
   "client": [
-    "ClientLevelMixin",
-    "LivingEntityRendererAccessorMixin",
     "WolfModelMixin"
   ],
   "injectors": {
