@@ -37,6 +37,11 @@ public class Config extends ConfigBase
     @Prop(validator = "validateEnabledPoses")
     public List<String> enabledPoses = new ArrayList<>(DEFAULT_POSES);
 
+    public Config()
+    {
+        super("letsleepingdogslie.toml");
+    }
+
     public boolean validateEnabledPoses(Object o)
     {
         if(o instanceof String s)
