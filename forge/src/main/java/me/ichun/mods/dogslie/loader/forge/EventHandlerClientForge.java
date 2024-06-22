@@ -18,12 +18,9 @@ public class EventHandlerClientForge extends EventHandlerClient
     }
 
     @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event)
+    public void onClientTick(TickEvent.ClientTickEvent.Post event)
     {
-        if(event.phase == TickEvent.Phase.END)
-        {
-            onClientTickEnd(Minecraft.getInstance());
-        }
+        onClientTickEnd(Minecraft.getInstance());
     }
 
     @SubscribeEvent
