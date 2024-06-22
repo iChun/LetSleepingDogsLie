@@ -1,10 +1,7 @@
 package me.ichun.mods.dogslie.loader.forge;
 
 import me.ichun.mods.dogslie.common.core.EventHandlerClient;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -18,12 +15,6 @@ public class EventHandlerClientForge extends EventHandlerClient
     }
 
     @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent.Post event)
-    {
-        onClientTickEnd(Minecraft.getInstance());
-    }
-
-    @SubscribeEvent
     public void onWorldLoad(LevelEvent.Load event)
     {
         onLevelLoad();
@@ -34,7 +25,4 @@ public class EventHandlerClientForge extends EventHandlerClient
     {
         onClientDisconnected();
     }
-
-    @Override
-    public void fireClientLevelLoad(ClientLevel level){}
 }

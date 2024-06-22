@@ -1,8 +1,8 @@
 package me.ichun.mods.dogslie.common.core;
 
 import me.ichun.mods.dogslie.common.LetSleepingDogsLie;
+import me.ichun.mods.ichunutil.common.iChunUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,7 +22,10 @@ public abstract class EventHandlerClient
 
     public WeakHashMap<Wolf, WolfInfo> wolfInfo = new WeakHashMap<>();
 
-    public abstract void fireClientLevelLoad(ClientLevel level);
+    public EventHandlerClient()
+    {
+        iChunUtil.eC().registerClientTickEndListener(this::onClientTickEnd);
+    }
 
     public void onEntityJoinLevel(Level level, Entity entity)
     {

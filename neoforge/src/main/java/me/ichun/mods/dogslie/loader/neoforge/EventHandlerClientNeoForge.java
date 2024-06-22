@@ -1,11 +1,8 @@
 package me.ichun.mods.dogslie.loader.neoforge;
 
 import me.ichun.mods.dogslie.common.core.EventHandlerClient;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 
@@ -15,12 +12,6 @@ public class EventHandlerClientNeoForge extends EventHandlerClient
     public void onEntityJoinWorld(EntityJoinLevelEvent event)
     {
         onEntityJoinLevel(event.getLevel(), event.getEntity());
-    }
-
-    @SubscribeEvent
-    public void onClientTick(ClientTickEvent.Post event)
-    {
-        onClientTickEnd(Minecraft.getInstance());
     }
 
     @SubscribeEvent
@@ -34,7 +25,4 @@ public class EventHandlerClientNeoForge extends EventHandlerClient
     {
         onClientDisconnected();
     }
-
-    @Override
-    public void fireClientLevelLoad(ClientLevel level){}
 }

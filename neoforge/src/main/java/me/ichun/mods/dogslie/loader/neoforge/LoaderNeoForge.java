@@ -3,7 +3,6 @@ package me.ichun.mods.dogslie.loader.neoforge;
 import me.ichun.mods.dogslie.common.LetSleepingDogsLie;
 import me.ichun.mods.dogslie.common.core.Config;
 import me.ichun.mods.ichunutil.common.iChunUtil;
-import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -30,14 +29,9 @@ public class LoaderNeoForge extends LetSleepingDogsLie
     @OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
     private void initClient(IEventBus modEventBus)
     {
-        setupConfig(modEventBus);
-        NeoForge.EVENT_BUS.register(LetSleepingDogsLie.eventHandlerClient = new EventHandlerClientNeoForge());
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    private void setupConfig(IEventBus modEventBus)
-    {
         //register config
         config = iChunUtil.d().registerConfig(new Config(), modEventBus);
+
+        NeoForge.EVENT_BUS.register(LetSleepingDogsLie.eventHandlerClient = new EventHandlerClientNeoForge());
     }
 }
