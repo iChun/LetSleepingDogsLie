@@ -2,7 +2,6 @@ package me.ichun.mods.dogslie.loader.neoforge;
 
 import me.ichun.mods.dogslie.common.core.EventHandlerClient;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 
@@ -18,11 +17,5 @@ public class EventHandlerClientNeoForge extends EventHandlerClient
     public void onWorldLoad(LevelEvent.Load event)
     {
         onLevelLoad();
-    }
-
-    @SubscribeEvent
-    public void onLoggedOutEvent(ClientPlayerNetworkEvent.LoggingOut event)
-    {
-        onClientDisconnected();
     }
 }

@@ -25,6 +25,8 @@ public abstract class EventHandlerClient
     public EventHandlerClient()
     {
         iChunUtil.eC().registerClientTickEndListener(this::onClientTickEnd);
+
+        iChunUtil.eC().registerOnClientDisconnectListener(client -> onClientDisconnected());
     }
 
     public void onEntityJoinLevel(Level level, Entity entity)
