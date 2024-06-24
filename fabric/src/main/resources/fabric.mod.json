@@ -23,7 +23,7 @@
       "me.ichun.mods.dogslie.loader.fabric.LoaderFabricClient"
     ],
     "modmenu": [
-      "me.ichun.mods.dogslie.loader.fabric.ModMenuIntegration"
+      "me.ichun.mods.ichunutil.loader.fabric.client.ModMenuIntegration"
     ]
   },
 
