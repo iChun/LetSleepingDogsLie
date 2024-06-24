@@ -2,8 +2,11 @@ package me.ichun.mods.dogslie.loader.forge;
 
 import me.ichun.mods.dogslie.common.LetSleepingDogsLie;
 import me.ichun.mods.dogslie.common.core.Config;
+import me.ichun.mods.ichunutil.client.gui.config.WorkspaceConfigs;
 import me.ichun.mods.ichunutil.common.iChunUtil;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.IExtensionPoint;
@@ -25,11 +28,14 @@ public class LoaderForge extends LetSleepingDogsLie
         ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, IExtensionPoint.DisplayTest.IGNORE_ALL_VERSION);
     }
 
+    @OnlyIn(Dist.CLIENT)
     private void initClient()
     {
         //register config
         config = iChunUtil.d().registerConfig(new Config());
 
         MinecraftForge.EVENT_BUS.register(eventHandlerClient = new EventHandlerClientForge());
+
+        ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, () -> new ConfigScreenHandler.ConfigScreenFactory(WorkspaceConfigs::new));
     }
 }
