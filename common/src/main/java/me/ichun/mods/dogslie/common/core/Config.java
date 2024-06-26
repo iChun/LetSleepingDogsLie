@@ -32,7 +32,9 @@ public class Config extends ConfigBase
     @Prop(min = 0D, max = 32D)
     public double rangeBeforeGettingUp = 3D;
 
-    public LetSleepingDogsLie.GetsUpFor getsUpTo = LetSleepingDogsLie.GetsUpFor.OWNER;
+    public LetSleepingDogsLie.GetsUpFor getsUpFor = LetSleepingDogsLie.GetsUpFor.OWNER;
+
+    public boolean playSoundWhenLieStateChanges = true;
 
     @Prop(validator = "validateEnabledPoses")
     public List<String> enabledPoses = new ArrayList<>(DEFAULT_POSES);
