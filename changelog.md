@@ -4,10 +4,11 @@ Let Sleeping Dogs Lie
 ### 1.3.0
 - Now dependent on iChunUtil for all Mod Loaders. CompleteConfig no longer required on Fabric.
 - Significant code refactors due to new dependency on iChunUtil.
+- Added config to toggle playing a sound when dogs lie state changes.
 
 ### 1.2.0
-- Ported to MC 1.20.4
-- Ported to NeoForge
+- Ported to MC 1.20.4.
+- Ported to NeoForge.
 - Added missing icon.png for Mods list. 
 
 
