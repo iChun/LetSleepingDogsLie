@@ -92,12 +92,12 @@ public abstract class EventHandlerClient
                 boolean isLying = isLying();
                 sitTime++;
 
-                if(!isLying && isLying() && Minecraft.getInstance().cameraEntity != null && Minecraft.getInstance().cameraEntity.tickCount > 20)
+                if(!isLying && isLying() && Minecraft.getInstance().cameraEntity != null && Minecraft.getInstance().cameraEntity.tickCount > 20 && LetSleepingDogsLie.config.playSoundWhenLieStateChanges)
                 {
                     parent.getCommandSenderWorld().playLocalSound(parent.getX(), parent.getY() + parent.getEyeHeight(), parent.getZ(), SoundEvents.WOLF_WHINE, parent.getSoundSource(), 0.4F, parent.isBaby() ? (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.5F : (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.0F, false);
                 }
 
-                LetSleepingDogsLie.GetsUpFor getsUpFor = LetSleepingDogsLie.config.getsUpTo;
+                LetSleepingDogsLie.GetsUpFor getsUpFor = LetSleepingDogsLie.config.getsUpFor;
                 if(parent.tickCount % 10 == 0 && getsUpFor != LetSleepingDogsLie.GetsUpFor.NOBODY && LetSleepingDogsLie.config.rangeBeforeGettingUp > 0.1D)
                 {
                     List<Entity> ents = parent.getCommandSenderWorld().getEntities(parent, parent.getBoundingBox().inflate(LetSleepingDogsLie.config.rangeBeforeGettingUp));
@@ -105,7 +105,7 @@ public abstract class EventHandlerClient
                         getsUpFor == LetSleepingDogsLie.GetsUpFor.PLAYERS && entity instanceof Player && !entity.isSpectator() ||
                         getsUpFor == LetSleepingDogsLie.GetsUpFor.ANY_LIVING_ENTITY && entity instanceof LivingEntity && !(entity instanceof Player && entity.isSpectator())) && parent.hasLineOfSight(entity)))
                     {
-                        if(isLying)
+                        if(isLying && LetSleepingDogsLie.config.playSoundWhenLieStateChanges)
                         {
                             parent.getCommandSenderWorld().playLocalSound(parent.getX(), parent.getY() + parent.getEyeHeight(), parent.getZ(), SoundEvents.WOLF_AMBIENT, parent.getSoundSource(), 0.4F, parent.isBaby() ? (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.5F : (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.0F, false);
                         }
