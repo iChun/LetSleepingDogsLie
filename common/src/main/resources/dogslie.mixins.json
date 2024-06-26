@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.ichun.mods.dogslie.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "dogslie.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+    "WolfModelMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
