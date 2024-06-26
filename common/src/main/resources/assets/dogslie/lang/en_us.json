@@ -5,8 +5,10 @@
   "config.dogslie.prop.timeBeforeLie.desc": "Time to spend sitting (in ticks) before dogs lie down.",
   "config.dogslie.prop.rangeBeforeGettingUp.name": "Range Before Getting Up",
   "config.dogslie.prop.rangeBeforeGettingUp.desc": "Range for target to get to dog before dog gets up (in blocks)",
-  "config.dogslie.prop.getsUpTo.name": "Gets Up To...",
-  "config.dogslie.prop.getsUpTo.desc": "Who the dog gets up to?\nAccepts: NOBODY, OWNER, PLAYERS, ANY_LIVING_ENTITY",
+  "config.dogslie.prop.getsUpFor.name": "Gets Up For...",
+  "config.dogslie.prop.getsUpFor.desc": "Who the dog gets up for?\nAccepts: NOBODY, OWNER, PLAYERS, ANY_LIVING_ENTITY",
+  "config.dogslie.prop.playSoundWhenLieStateChanges.name": "Play Sound When Lie State Changes",
+  "config.dogslie.prop.playSoundWhenLieStateChanges.desc": "Play a bark/whine when the dog stands up/lies down?",
   "config.dogslie.prop.enabledPoses.name": "Enabled Lying Poses",
   "config.dogslie.prop.enabledPoses.desc": "Poses for lying down that are enabled. If the mod can't find compatible poses, it will randomly pick one set."
 }
