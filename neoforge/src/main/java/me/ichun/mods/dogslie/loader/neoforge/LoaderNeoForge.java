@@ -38,6 +38,6 @@ public class LoaderNeoForge extends LetSleepingDogsLie
 
         NeoForge.EVENT_BUS.register(LetSleepingDogsLie.eventHandlerClient = new EventHandlerClientNeoForge());
 
-        ModLoadingContext.get().registerExtensionPoint(IConfigScreenFactory.class, () -> (minecraft, screen) -> new WorkspaceConfigs(screen));
+        ModLoadingContext.get().registerExtensionPoint(IConfigScreenFactory.class, () -> (modContainer, screen) -> new WorkspaceConfigs(screen));
     }
 }
