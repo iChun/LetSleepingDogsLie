@@ -2,6 +2,7 @@ package me.ichun.mods.dogslie.loader.neoforge;
 
 import me.ichun.mods.dogslie.common.LetSleepingDogsLie;
 import me.ichun.mods.dogslie.common.core.Config;
+import me.ichun.mods.dogslie.common.core.EventHandlerClient;
 import me.ichun.mods.ichunutil.client.gui.config.WorkspaceConfigs;
 import me.ichun.mods.ichunutil.common.iChunUtil;
 import net.neoforged.api.distmarker.Dist;
@@ -11,7 +12,6 @@ import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
-import net.neoforged.neoforge.common.NeoForge;
 
 @Mod(value = LetSleepingDogsLie.MOD_ID, dist = Dist.CLIENT)
 public class LoaderNeoForge extends LetSleepingDogsLie
@@ -36,7 +36,7 @@ public class LoaderNeoForge extends LetSleepingDogsLie
         //register config
         config = iChunUtil.d().registerConfig(new Config(), modEventBus);
 
-        NeoForge.EVENT_BUS.register(LetSleepingDogsLie.eventHandlerClient = new EventHandlerClientNeoForge());
+        LetSleepingDogsLie.eventHandlerClient = new EventHandlerClient();
 
         ModLoadingContext.get().registerExtensionPoint(IConfigScreenFactory.class, () -> (modContainer, screen) -> new WorkspaceConfigs(screen));
     }

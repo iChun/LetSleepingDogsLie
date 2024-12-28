@@ -2,7 +2,11 @@ package me.ichun.mods.dogslie.common.core;
 
 import me.ichun.mods.dogslie.common.LetSleepingDogsLie;
 import me.ichun.mods.ichunutil.common.iChunUtil;
+import me.ichun.mods.ichunutil.loader.event.client.LivingRenderPreEvent;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.WolfModel;
+import net.minecraft.client.renderer.entity.WolfRenderer;
+import net.minecraft.client.renderer.entity.state.WolfRenderState;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,22 +20,29 @@ import java.util.List;
 import java.util.Random;
 import java.util.WeakHashMap;
 
-public abstract class EventHandlerClient
+public class EventHandlerClient
 {
+    public final LivingRenderPreEvent.LastRenderedEntitySupplier<Wolf> wolfRendered;
+
     public Random rand = new Random();
 
     public WeakHashMap<Wolf, WolfInfo> wolfInfo = new WeakHashMap<>();
 
+
     public EventHandlerClient()
     {
+        wolfRendered = new LivingRenderPreEvent.LastRenderedEntitySupplier<>(event -> event.renderer() instanceof WolfRenderer renderer && renderer.getModel().getClass().equals(WolfModel.class) && event.livingEntity() instanceof Wolf && event.renderState() instanceof WolfRenderState);
+
         iChunUtil.eC().registerClientTickEndListener(this::onClientTickEnd);
+        iChunUtil.eC().registerClientLevelLoadListener(level -> onLevelLoad());
+        iChunUtil.eC().registerClientEntityJoinLevelListener(this::onClientEntityJoinLevel);
 
         iChunUtil.eC().registerOnClientDisconnectListener(client -> onClientDisconnected());
     }
 
-    public void onEntityJoinLevel(Level level, Entity entity)
+    public void onClientEntityJoinLevel(Level level, Entity entity)
     {
-        if(level.isClientSide && entity instanceof Wolf wolf)
+        if(entity instanceof Wolf wolf)
         {
             if(!wolfInfo.containsKey(wolf))
             {

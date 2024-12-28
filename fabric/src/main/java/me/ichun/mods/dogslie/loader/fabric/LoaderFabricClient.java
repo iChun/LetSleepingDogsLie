@@ -2,11 +2,12 @@ package me.ichun.mods.dogslie.loader.fabric;
 
 import me.ichun.mods.dogslie.common.LetSleepingDogsLie;
 import me.ichun.mods.dogslie.common.core.Config;
+import me.ichun.mods.dogslie.common.core.EventHandlerClient;
 import me.ichun.mods.ichunutil.common.iChunUtil;
 import net.fabricmc.api.ClientModInitializer;
 
 public class LoaderFabricClient extends LetSleepingDogsLie
-        implements ClientModInitializer
+    implements ClientModInitializer
 {
     @Override
     public void onInitializeClient()
@@ -16,6 +17,6 @@ public class LoaderFabricClient extends LetSleepingDogsLie
         //register config
         config = iChunUtil.d().registerConfig(new Config());
 
-        LetSleepingDogsLie.eventHandlerClient = new EventHandlerClientFabric();
+        LetSleepingDogsLie.eventHandlerClient = new EventHandlerClient();
     }
 }
