@@ -1,16 +1,18 @@
 package me.ichun.mods.dogslie.common.core;
 
 import me.ichun.mods.dogslie.common.LetSleepingDogsLie;
+import me.ichun.mods.dogslie.mixin.WolfAccessorMixin;
 import me.ichun.mods.ichunutil.common.iChunUtil;
 import me.ichun.mods.ichunutil.loader.event.client.LivingRenderPreEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.WolfModel;
 import net.minecraft.client.renderer.entity.WolfRenderer;
 import net.minecraft.client.renderer.entity.state.WolfRenderState;
-import net.minecraft.sounds.SoundEvents;
+import net.minecraft.core.Holder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.entity.animal.wolf.Wolf;
+import net.minecraft.world.entity.animal.wolf.WolfSoundVariant;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
@@ -103,9 +105,11 @@ public class EventHandlerClient
                 boolean isLying = isLying();
                 sitTime++;
 
+                Holder<WolfSoundVariant> wolfSoundVariant = ((WolfAccessorMixin)parent).invokeGetSoundVariant();
+
                 if(!isLying && isLying() && Minecraft.getInstance().cameraEntity != null && Minecraft.getInstance().cameraEntity.tickCount > 20 && LetSleepingDogsLie.config.playSoundWhenLieStateChanges)
                 {
-                    parent.getCommandSenderWorld().playLocalSound(parent.getX(), parent.getY() + parent.getEyeHeight(), parent.getZ(), SoundEvents.WOLF_WHINE, parent.getSoundSource(), 0.4F, parent.isBaby() ? (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.5F : (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.0F, false);
+                    parent.getCommandSenderWorld().playLocalSound(parent.getX(), parent.getY() + parent.getEyeHeight(), parent.getZ(), wolfSoundVariant.value().whineSound().value(), parent.getSoundSource(), 0.4F, parent.isBaby() ? (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.5F : (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.0F, false);
                 }
 
                 LetSleepingDogsLie.GetsUpFor getsUpFor = LetSleepingDogsLie.config.getsUpFor;
@@ -118,7 +122,7 @@ public class EventHandlerClient
                     {
                         if(isLying && LetSleepingDogsLie.config.playSoundWhenLieStateChanges)
                         {
-                            parent.getCommandSenderWorld().playLocalSound(parent.getX(), parent.getY() + parent.getEyeHeight(), parent.getZ(), SoundEvents.WOLF_AMBIENT, parent.getSoundSource(), 0.4F, parent.isBaby() ? (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.5F : (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.0F, false);
+                            parent.getCommandSenderWorld().playLocalSound(parent.getX(), parent.getY() + parent.getEyeHeight(), parent.getZ(), wolfSoundVariant.value().ambientSound().value(), parent.getSoundSource(), 0.4F, parent.isBaby() ? (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.5F : (parent.getRandom().nextFloat() - parent.getRandom().nextFloat()) * 0.2F + 1.0F, false);
                         }
                         sitTime = 0;
                         setPoses = null;

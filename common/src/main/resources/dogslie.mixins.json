@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "dogslie.refmap.json",
   "mixins": [
+    "WolfAccessorMixin"
   ],
   "client": [
     "WolfModelMixin"
