@@ -36,7 +36,7 @@ public class LoaderNeoForge extends LetSleepingDogsLie
     private void initClient(IEventBus modEventBus, ModContainer container)
     {
         //register config
-        config = iChunUtil.d().registerConfig(new Config(), modEventBus);
+        config = iChunUtil.d().registerConfig(new Config(), modEventBus, container);
 
         LetSleepingDogsLie.eventHandlerClient = new EventHandlerClient();
 
